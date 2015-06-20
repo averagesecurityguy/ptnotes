@@ -4,8 +4,11 @@
 import sqlite3
 import logging
 import sys
+import os.path
+import json
 
 import validate
+
 
 class Database():
     """
@@ -19,9 +22,10 @@ class Database():
         self.log = logging.getLogger('DATABASE')
         self.valid = validate.Validate()
         self.con = sqlite3.connect('ptnotes.sqlite')
+        self.con.row_factory = sqlite3.Row
         self.cur = self.con.cursor()
         self.initialize_database()
-
+        self.import_attacks()
 
     def execute_sql(self, stmt, args=None, commit=True):
         """
@@ -37,14 +41,14 @@ class Database():
                 self.cur.execute(stmt)
             else:
                 self.cur.execute(stmt, args)
-            
+
             if commit is True:
                 self.con.commit()
 
             return True
 
         except sqlite3.Error as e:
-            self.log.debug(e) 
+            self.log.debug(e)
             return False
 
     def initialize_database(self):
@@ -57,25 +61,45 @@ class Database():
             ip text,
             port integer,
             protocol text,
-            service text,
             note text
         )
         '''
         itable = self.execute_sql(items)
 
-        notes = '''
-        CREATE TABLE IF NOT EXISTS notes (
-            id integer primary key autoincrement,
+        attacks = '''
+        CREATE TABLE IF NOT EXISTS attacks (
+            id integer primary key,
+            name text
             port integer,
             protocol text,
-            note text
+            description text
         )
         '''
-        ntable = self.execute_sql(notes)
+        atable = self.execute_sql(attacks)
 
-        if (itable is False) or (ntable is False):
+        if (itable is False) or (atable is False):
             self.log.critical('Could not create database.')
             sys.exit(1)
+
+    def import_attacks(self):
+        """
+        Import the known attacks from the attacks.json file in the data
+        folder.
+        """
+        attack_file = os.path.join('data', 'attacks.json')
+        try:
+            with open(attack_file) as f:
+                attacks = json.loads(f.read())
+
+        except (IOError, ValueError):
+            self.log.critical('Could not load attack file.')
+            sys.exit(1)
+
+        stmt = "INSERT INTO attacks (id, name, description, port, protocol) VALUES(?,?,?,?,?)"
+        for a in attacks:
+            insert = self.execute_sql(stmt, (a['id'], a['name'], a['description'], a['port'], a['protocol']))
+            if insert is False:
+                self.log.error('Could not load attack {0}.'.format(a['id']))
 
     #
     # Manipulate Items
@@ -124,12 +148,24 @@ class Database():
         else:
             return None
 
-    def get_items(self):
+    def get_items(self, ip):
         """
-        Get all items.
+        Get all items associated with an IP.
         """
-        self.log.debug('Getting all items.')
-        stmt = "SELECT * FROM items"
+        self.log.debug('Getting all items for {0}.'.format(ip))
+        stmt = "SELECT * FROM items WHERE ip=?"
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            return self.cur.fetchall()
+        else:
+            return []
+
+    def get_hosts(self):
+        """
+        Get all hosts.
+        """
+        self.log.debug('Getting all hosts.')
+        stmt = "SELECT ip FROM items"
 
         if self.execute_sql(stmt) is True:
             return self.cur.fetchall()
@@ -137,58 +173,33 @@ class Database():
             return []
 
     #
-    # Manipulate Built-in Notes
+    # Manipulate Common Attacks
     #
-    def create_note(self, port, protocol, note):
+    def get_attack(self, aid):
         """
-        Add new note.
+        Get an attack and a list of potential targets.
         """
-        self.log.debug('Creating new built-in note.')
-        try:
-            validate.valid_port(port)
-            validate.valid_protocol(protocol)
+        self.log.debug('Getting attack {0}.'.format(aid))
+        stmt = "SELECT * FROM attacks WHERE id=?"
+        if self.execute_sql(stmt, (aid,), commit=False) is True:
+            attack = self.cur.fetchone()
 
-        except AssertionError as e:
-            self.log.error(e)
-            return False
-
-        stmt = "INSERT INTO notes (port, protocol, note) VALUES(?,?,?)"
-        return self.execute_sql(stmt, (port, protocol, note))
-
-    def delete_note(self, nid):
-        """
-        Delete a note.
-        """
-        self.log.debug('Deleting built-in note {0}.'.format(nid))
-        stmt = "DELETE FROM notes WHERE id=?"
-        return self.execute_sql(stmt, (nid,))
-
-    def update_note(self, nid, note):
-        """
-        Update a note.
-        """
-        self.log.debug('Updating built-in note {0}.'.format(nid))
-        stmt = "UPDATE notes SET note=? WHERE id=?"
-        return self.execute_sql(stmt, (note, nid))
-
-    def get_note(self, nid):
-        """
-        Get a note.
-        """
-        self.log.debug('Getting built-in note {0}.'.format(nid))
-        stmt = "SELECT * FROM notes WHERE id=?"
-        if self.execute_sql(stmt, (nid,), commit=False) is True:
-            return self.cur.fetchone()
+            stmt = "SELECT * FROM items WHERE port=? AND protocol=?"
+            if self.execute_sql(stmt, (attack['port'], attack['protocol']), commit=False) is True:
+                hosts = self.cur.fetchall()
+                return attack, hosts
+            else:
+                return None, None
         else:
-            return None
+            return None, None
 
-    def get_notes(self):
+    def get_attacks(self):
         """
-        Get all notes.
+        Get all potential attacks.
         """
-        self.log.debug('Getting all built-in notes.')
-        stmt = "SELECT * FROM notes"
-        if self.execute_sql(stmt) is True:
+        self.log.debug('Getting all potential attacks.')
+        stmt = "SELECT name, description FROM attacks"
+        if self.execute_sql(stmt, commit=False) is True:
             return self.cur.fetchall()
         else:
             return []

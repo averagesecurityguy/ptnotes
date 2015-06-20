@@ -2,18 +2,16 @@
 
 import xml.etree.ElementTree
 import logging
-import os.path
 
 import db
 
 
 class Import():
 
-    def __init__(self, filename):
+    def __init__(self, scan_data):
         self.log = logging.getLogger('IMPORT')
         self.db = db.Database()
-        self.filename = filename
-        self.scan_data = self.open_file()
+        self.scan_data = scan_data
         self.file_type = self.get_file_type(self.scan_data[:100])
 
         if self.file_type == 'Nessus':
@@ -34,7 +32,7 @@ class Import():
             with open(self.filename) as file:
                 return file.read()
 
-        except IOError as e:
+        except IOError:
             self.log.error('Unable to open file {0}.'.format(self.filename))
             return ''
 

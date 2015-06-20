@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+	<head>
+		<title>Pentest Notes</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="/static/ptnotes.css" media="screen" />
+	</head>
+<body>
+  <header>
+    <h1>Pentest Notes</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/import">Add Scan Data</a>
+      <a href="/hosts">View Hosts</a>
+      <a href="/attacks">Possible Attacks</a>
+      <a href="/about">About</a>
+    </nav>
+  </header>
+
+  <!-- End main content area -->
+  <section class="content">
+	{% block data %}
+	{% endblock %}
+  </section>
+
+  <!-- End main content area -->
+  <footer>
+    <p>&copy; 2015 LCI Technology Group, LLC</p>
+  </footer>
+</body>
+</html>

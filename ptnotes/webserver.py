@@ -67,7 +67,8 @@ def import_scan():
     message = None
 
     if flask.request.method == 'POST':
-        importscan.Import(flask.request.form('filename'))
+        file = flask.request.files['file']
+        importscan.Import(file.read())
         message = 'Import of {0} is complete.'
 
     return flask.render_template('import.html', message=message)
