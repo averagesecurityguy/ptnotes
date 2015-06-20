@@ -1,0 +1,16 @@
+# -*- coding: utf-8 -*-
+
+import logging
+import os
+
+import ptnotes.webserver as server
+
+log_file = os.path.join('log', 'ptnotes.log')
+
+logging.basicConfig(
+    level=logging.INFO,
+    filename=log_file)
+
+logging.info('Starting PTNotes server.')
+
+server.app.run()
