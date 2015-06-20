@@ -1,5 +1,5 @@
 .DS_Store
-.sqlite
+*.sqlite
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
