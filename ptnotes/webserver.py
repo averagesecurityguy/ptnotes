@@ -2,8 +2,8 @@
 
 import flask
 
+import database
 import importscan
-import db
 
 
 #-----------------------------------------------------------------------------
@@ -27,7 +27,8 @@ def hosts():
     """
     Get a list of all the hosts and their open ports.
     """
-    hosts = sorted(db.items())
+    db = database.Database()
+    hosts = sorted(db.get_hosts())
 
     return flask.render_template('hosts.html', hosts=hosts)
 
@@ -37,7 +38,8 @@ def get_host(ip):
     """
     Get all the information about a host.
     """
-    data = db.get_item(ip)
+    db = database.Database()
+    data = db.get_items(ip)
 
     return flask.render_template('host.html', host=ip, data=data)
 
@@ -47,6 +49,7 @@ def attacks():
     """
     Get a list of all the built in attacks.
     """
+    db = database.Database()
     attacks = sorted(db.get_attacks())
 
     return flask.render_template('attacks.html', attacks=attacks)
@@ -57,6 +60,7 @@ def get_attack(aid):
     """
     Get list of all the hosts possibly vulnerable to the attack.
     """
+    db = database.Database()
     hosts = db.get_attack(aid)
 
     return flask.render_template('attack.html', hosts=hosts)
@@ -69,6 +73,6 @@ def import_scan():
     if flask.request.method == 'POST':
         file = flask.request.files['file']
         importscan.Import(file.read())
-        message = 'Import of {0} is complete.'
+        message = 'Import of {0} is complete.'.format(file.name)
 
     return flask.render_template('import.html', message=message)

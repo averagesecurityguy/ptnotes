@@ -4,7 +4,7 @@
 {% if not hosts %}
 	<p>No hosts have been added yet, please import a Nessus or Nmap XML file.</p>
 {% else %}
-	<ul class="column6">
+	<ul class="column4">
 	{% for host in hosts %}
 		<li><a href="/host/{{ host['ip'] }}">{{ host['ip'] }}</a></li>
 	{% endfor %}

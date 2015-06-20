@@ -1,0 +1,184 @@
+/* apply a natural box layout model to all elements */
+/*http://www.paulirish.com/2012/box-sizing-border-box-ftw/*/
+
+*, *:before, *:after {
+  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+ }
+
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+  background-color: #fff;
+  font-family: "Century Gothic", Calibri, Tahoma, sans-serif;
+  font-size: 16px;
+  color: #000;
+}
+
+h1, h2, h3, h4 {
+  margin: 1em 0 0 0;
+  padding: 0;
+  font-family: Copperplate, Cambria, Georgia, serif;
+  color: #000;
+  font-weight: normal;
+}
+
+p {
+  font-size: 1em;
+  line-height: 1.65;
+  color: #000;
+  margin: 0 0 1.65em 0;
+  padding: 0;
+}
+
+a {
+  color: #000;
+  text-decoration: none;
+  border-bottom: 1px solid #000;
+  -webkit-transition: opacity 0.2s linear; 
+  -moz-transition: opacity 0.2s linear; 
+  -o-transition: opacity 0.2s linear; 
+  transition: opacity 0.2s linear; 
+}
+
+a:hover {
+  opacity: .5;
+}
+
+ul {
+  list-style-type: none;
+}
+
+header {
+  margin: 0 5%;
+  padding: 0;
+}
+
+header h1 {
+  margin: 2% 0 0 0;
+  padding: 0;
+  font-family: Copperplate, Cambria, Georgia, serif;
+  font-size: 3.25em;
+  color: #ffcc33;
+}
+
+nav {
+  margin-bottom: 2.5%;
+  padding: 0;
+}
+
+nav a {
+  display: inline-block;
+  margin: 0 1em .5em 0;
+  padding: 0 0 2px 0;
+  color: #000;
+  font-size: 1.4em;
+  border-bottom: none;
+}
+
+nav a:hover {
+  padding: 0;
+  border-bottom: 2px #000 solid;
+}
+
+.content {
+  margin: 0 5%;
+  padding: 0;
+}
+
+section {
+  min-height: 300px;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 10px;
+}
+
+td {
+  vertical-align: top;
+}
+
+table, tr, td, th {
+  padding: 10px;
+  border: 1px solid #eee;
+}
+
+footer {
+  margin: 1em 5% 1.25em 5%;
+  padding: 0;
+  background-color: #fff;
+}
+
+.column4 {
+    -ms-column-count: 4;
+    -moz-column-count: 4;
+    -webkit-column-count: 4;
+    column-count: 4;
+}
+
+.column6 {
+    -ms-column-count: 6;
+    -moz-column-count: 6;
+    -webkit-column-count: 6;
+    column-count: 6;
+}
+
+.column12 {
+    -ms-column-count: 12;
+    -moz-column-count: 12;
+    -webkit-column-count: 12;
+    column-count: 12;
+}
+
+.message {
+  background-color: #ffdd44;
+  width: 50%;
+}
+
+textarea {
+  margin: 0;
+  padding: 0;
+  width: 50%;
+  height: 150px;
+}
+
+img {
+    max-width: 100px;
+}
+
+footer p {
+  margin: 0;
+  padding: 0;
+  font-size: .8em;
+}
+
+/* ==========================================================================
+   Mobile(ish) Styles
+   ========================================================================== */
+
+@media only screen and (max-width: 600px) {
+
+body {
+  font-size: 14px;
+}
+
+header h1 {
+  font-size: 2.25em;
+}
+
+header h1 {
+  margin-top: 5%;
+}
+
+nav a {
+  font-size: 1.25em;
+}
+
+}
+

@@ -6,7 +6,7 @@
 {% endif %}
 
 <h2>Import a Nessus or Nmap XML file.</h2>
-<form action="/import" method="post">
+<form action="/import" method="post" enctype="multipart/form-data">
   <input type="file" name="file" placeholder="Enter a Nessus or Nmap XML filename."></input><br />
   <input type="submit" value="Import">
 </form>

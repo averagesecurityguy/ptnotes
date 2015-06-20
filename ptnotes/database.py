@@ -9,6 +9,82 @@ import json
 
 import validate
 
+#
+# Initialize the database once when we import the module.
+#
+DB_FILE = os.path.join('data', 'ptnotes.sqlite')
+ATK_FILE = os.path.join('data', 'attacks.json')
+
+#
+# Setup the tables we need for our database.
+#
+con = sqlite3.connect(DB_FILE)
+cur = con.cursor()
+log = logging.getLogger('DATABASE')
+
+#
+# Define our SQL statements
+#
+items = '''
+CREATE TABLE IF NOT EXISTS items (
+    id integer primary key autoincrement,
+    ip text,
+    port integer,
+    protocol text,
+    note text
+)
+'''
+
+attacks = '''
+CREATE TABLE IF NOT EXISTS attacks (
+    id integer primary key,
+    name text,
+    port integer,
+    protocol text,
+    description text
+)
+'''
+
+put = "INSERT INTO attacks (id, name, description, port, protocol) VALUES(?,?,?,?,?)"
+get = "SELECT name FROM attacks WHERE id=?"
+
+#
+# Setup our tables
+#
+try:
+    cur.execute(items)
+    cur.execute(attacks)
+    con.commit()
+
+except sqlite3.Error as e:
+    log.critical('Could not create database: {0}.'.format(e))
+    sys.exit(1)
+
+#
+# Load our attacks from the JSON file.
+#
+try:
+    with open(ATK_FILE) as f:
+        attacks = json.loads(f.read())
+
+except (IOError, ValueError) as e:
+    log.critical('Could not load attack file: {0}'.format(e))
+    sys.exit(1)
+
+#
+# Insert the attacks into the database.
+#
+for a in attacks:
+    try:
+        cur.execute(get, (a['id'],))
+        if cur.fetchone() is None:
+            cur.execute(put, (a['id'], a['name'], a['description'], a['port'], a['protocol']))
+    except sqlite3.Error:
+        log.error('Could not load attack {0}.'.format(a['id']))
+
+con.commit()
+con.close()
+
 
 class Database():
     """
@@ -21,11 +97,16 @@ class Database():
         """
         self.log = logging.getLogger('DATABASE')
         self.valid = validate.Validate()
-        self.con = sqlite3.connect('ptnotes.sqlite')
+        self.con = sqlite3.connect(DB_FILE)
         self.con.row_factory = sqlite3.Row
         self.cur = self.con.cursor()
-        self.initialize_database()
-        self.import_attacks()
+
+    def __del__(self):
+        """
+        Clean up the database connection if it exists.
+        """
+        if self.con is not None:
+            self.con.close()
 
     def execute_sql(self, stmt, args=None, commit=True):
         """
@@ -50,56 +131,6 @@ class Database():
         except sqlite3.Error as e:
             self.log.debug(e)
             return False
-
-    def initialize_database(self):
-        """
-        Setup the tables we need for our database.
-        """
-        items = '''
-        CREATE TABLE IF NOT EXISTS items (
-            id integer primary key autoincrement,
-            ip text,
-            port integer,
-            protocol text,
-            note text
-        )
-        '''
-        itable = self.execute_sql(items)
-
-        attacks = '''
-        CREATE TABLE IF NOT EXISTS attacks (
-            id integer primary key,
-            name text
-            port integer,
-            protocol text,
-            description text
-        )
-        '''
-        atable = self.execute_sql(attacks)
-
-        if (itable is False) or (atable is False):
-            self.log.critical('Could not create database.')
-            sys.exit(1)
-
-    def import_attacks(self):
-        """
-        Import the known attacks from the attacks.json file in the data
-        folder.
-        """
-        attack_file = os.path.join('data', 'attacks.json')
-        try:
-            with open(attack_file) as f:
-                attacks = json.loads(f.read())
-
-        except (IOError, ValueError):
-            self.log.critical('Could not load attack file.')
-            sys.exit(1)
-
-        stmt = "INSERT INTO attacks (id, name, description, port, protocol) VALUES(?,?,?,?,?)"
-        for a in attacks:
-            insert = self.execute_sql(stmt, (a['id'], a['name'], a['description'], a['port'], a['protocol']))
-            if insert is False:
-                self.log.error('Could not load attack {0}.'.format(a['id']))
 
     #
     # Manipulate Items
@@ -165,7 +196,7 @@ class Database():
         Get all hosts.
         """
         self.log.debug('Getting all hosts.')
-        stmt = "SELECT ip FROM items"
+        stmt = "SELECT DISTINCT ip FROM items"
 
         if self.execute_sql(stmt) is True:
             return self.cur.fetchall()
