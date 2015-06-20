@@ -1,0 +1,9 @@
+[
+    {
+        "id": 1,
+        "name": "SSH Brute-force.",
+        "description": "Many devices have common SSH username and password combinations.",
+        "port": 22,
+        "protocol": "tcp"
+    }
+]

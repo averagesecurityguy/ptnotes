@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block data %}
+
+{% if not targets %}
+	<p>None of the targets have data associated with them. Confirm whether the lookup service is running.</p>
+{% else %}
+	<ul class="column6">
+	{% for target in targets %}
+		<li><a href="/target/{{ target }}">{{ target }}</a></li>
+	{% endfor %}
+
+{% endif %}
+
+	</ul>
+</div>
+{% endblock %}

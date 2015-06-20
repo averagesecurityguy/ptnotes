@@ -2,18 +2,16 @@
 
 import xml.etree.ElementTree
 import logging
-import os.path
 
-import db
+import database
 
 
 class Import():
 
-    def __init__(self, filename):
+    def __init__(self, scan_data):
         self.log = logging.getLogger('IMPORT')
-        self.db = db.Database()
-        self.filename = filename
-        self.scan_data = self.open_file()
+        self.db = database.Database()
+        self.scan_data = scan_data
         self.file_type = self.get_file_type(self.scan_data[:100])
 
         if self.file_type == 'Nessus':
@@ -34,7 +32,7 @@ class Import():
             with open(self.filename) as file:
                 return file.read()
 
-        except IOError as e:
+        except IOError:
             self.log.error('Unable to open file {0}.'.format(self.filename))
             return ''
 
@@ -49,7 +47,6 @@ class Import():
             return 'Nmap'
         else:
             return 'Unknown'
-
 
     def import_nessus(self):
         """
@@ -80,35 +77,39 @@ class Import():
                 self.log.info('Processing ip {0}.'.format(ip))
                 self.process_nessus_items(ip, host.findall('ReportItem'))
 
-
     def process_nessus_items(self, ip, report_items):
         """
         Process each report item in a host.
         """
         for item in report_items:
-            text = xml.etree.ElementTree.tostring(item, encoding='utf-8')
-            self.log.debug('Processing report item {0}.'.format(text))
+            # text = xml.etree.ElementTree.tostring(item, encoding='utf-8')
+            # self.log.debug('Processing report item {0}.'.format(text))
+
+            # Deal with low-risk and higher vulnerabilities
+            severity = int(item.attrib['severity'])
+            self.log.debug('Severity: {0}'.format(severity))
+            if severity == 0:
+                continue
 
             port = int(item.attrib['port'])
-            if port == 0:
-                continue
-                
             proto = item.attrib['protocol']
-            
+
             note = ''
+            description = item.find('description')
             output = item.find('plugin_output')
             if output is not None:
-                note = output.text
-        
+                note = output.text.strip('\n')
+            else:
+                note = description.text
+
             if self.db.create_item(ip, port, proto, note) is False:
                 self.log.error('Unable to create new Nessus item in database.')
 
-
-    def ip_key(self, ip):
-        """
-        Return an IP address as a tuple of ints for sorting purposes.
-        """
-        return tuple(int(part) for part in ip.split('.'))
+    # def ip_key(self, ip):
+    #     """
+    #     Return an IP address as a tuple of ints for sorting purposes.
+    #     """
+    #     return tuple(int(part) for part in ip.split('.'))
 
 
 
