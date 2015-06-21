@@ -1,67 +1,22 @@
 {% extends "base.html" %}
 {% block data %}
-<h2>{{ target }}</h2>
+<h2>{{ attack['name'] }}</h2>
+<p>{{ attack['description'] }}</p>
 
-{% if data['names'] != [] %}
-<h3>Names</h3>
-	<ul>
-		{% for name in data['names'] %}
-			<li><a href="/name/{{ name.decode('utf-8') }}">{{ name.decode('utf-8') }}</a></li>
-		{% endfor %}
-	</ul>
-{% endif %}
+<h3>Notes</h3>
+<form method='POST' action="/attack/{{ attack['id'] }}">
+	<textarea name="note">{{ attack['note'] }}</textarea><br />
+	<input type="submit" value="Update Notes" />
+</form>
 
-{% if data['abouts'] != [] %}
-<h3>Descriptions</h3>
-	<ul>
-		{% for about in data['abouts'] %}
-			<li>{{ about.decode('utf-8') }}</li>
-		{% endfor %}
-	</ul>
-{% endif %}
-
-{% if data['nyms'] != [] %}
-<h3>Handles</h3>
-	<ul>
-		{% for nym in data['nyms'] %}
-			<li><a href="/nym/{{ nym.decode('utf-8') }}">{{ nym.decode('utf-8') }}</a></li>
-		{% endfor %}
-	</ul>
-{% endif %}
-
-{% if data['emails'] != [] %}
-<h3>Emails</h3>
-	<ul>
-		{% for email in data['emails'] %}
-			<li><a href="/email/{{ email }}">{{ email }}</a></li>
-		{% endfor %}
-	</ul>
-{% endif %}
-
-{% if data['urls'] != [] %}
-<h3>URLs</h3>
-	<ul>
-		{% for url in data['urls'] %}
-			<li><a href="{{ url.decode('utf-8') }}">{{ url.decode('utf-8') }}</a></li>
-		{% endfor %}
-	</ul>
-{% endif %}
-
-{% if data['locs'] != [] %}
-<h3>Locations</h3>
-	<ul>
-		{% for loc in data['locs'] %}
-			<li>{{ loc.decode('utf-8') }}</li>
-		{% endfor %}
-	</ul>
-{% endif %}
-
-{% if data['images'] != [] %}
-<h3>Images</h3>
-	<ul>
-		{% for image in data['images'] %}
-			<li><img src="{{ image.decode('utf-8') }}" /></li>
-		{% endfor %}
+<h3>Hosts</h3>
+{% if not hosts %}
+	<p>No hosts are vulnerable to this attack.</p>
+{% else %}
+	<ul class="column4">
+	{% for host in hosts %}
+		<li><a href="/host/{{ host['ip'] }}">{{ host['ip'] }}</a></li>
+	{% endfor %}
 	</ul>
 {% endif %}
 

@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 {% block data %}
 
+<h2>Imported Hosts</h2>
 {% if not hosts %}
-	<p>No hosts have been added yet, please import a Nessus or Nmap XML file.</p>
+	<p>No hosts have been import yet, please import a Nessus or Nmap XML file.</p>
 {% else %}
 	<ul class="column4">
 	{% for host in hosts %}
 		<li><a href="/host/{{ host['ip'] }}">{{ host['ip'] }}</a></li>
 	{% endfor %}
+    </ul>
 
 {% endif %}
 
-	</ul>
 </div>
 {% endblock %}
