@@ -34,7 +34,7 @@ def hosts():
 
 
 @app.route('/host/<ip>')
-def get_host(ip):
+def host(ip):
     """
     Get all the information about a host.
     """
@@ -55,15 +55,20 @@ def attacks():
     return flask.render_template('attacks.html', attacks=attacks)
 
 
-@app.route('/attacks/<aid>')
+@app.route('/attack/<aid>', methods=['GET', 'POST'])
 def get_attack(aid):
     """
     Get list of all the hosts possibly vulnerable to the attack.
     """
     db = database.Database()
-    hosts = db.get_attack(aid)
 
-    return flask.render_template('attack.html', hosts=hosts)
+    if flask.request.method == 'POST':
+        note = flask.request.form['note']
+        db.update_attack(aid, note)
+
+    attack, hosts = db.get_attack(aid)
+
+    return flask.render_template('attack.html', attack=attack, hosts=hosts)
 
 
 @app.route('/import', methods=['GET', 'POST'])

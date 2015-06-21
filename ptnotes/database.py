@@ -41,7 +41,8 @@ CREATE TABLE IF NOT EXISTS attacks (
     name text,
     port integer,
     protocol text,
-    description text
+    description text,
+    note text
 )
 '''
 
@@ -152,39 +153,12 @@ class Database():
         stmt = "INSERT INTO items (ip, port, protocol, note) VALUES(?,?,?,?)"
         return self.execute_sql(stmt, (ip, port, protocol, note))
 
-    def delete_item(self, iid):
-        """
-        Delete an item.
-        """
-        self.log.debug('Deleting item {0}.'.format(iid))
-        stmt = "DELETE FROM items WHERE id=?"
-        return self.execute_sql(stmt, (iid,))
-
-    def update_item(self, iid, note):
-        """
-        Update the item.
-        """
-        self.log.debug('Updating item {0}.'.format(iid))
-        stmt = "UPDATE items SET note=? WHERE id=?"
-        return self.execute_sql(stmt, (note, iid))
-
-    def get_item(self, iid):
-        """
-        Get an item.
-        """
-        self.log.debug('Getting item {0}.'.format(iid))
-        stmt = "SELECT * FROM items WHERE id=?"
-        if self.execute_sql(stmt, (iid,), commit=False) is True:
-            return self.cur.fetchone()
-        else:
-            return None
-
     def get_items(self, ip):
         """
         Get all items associated with an IP.
         """
         self.log.debug('Getting all items for {0}.'.format(ip))
-        stmt = "SELECT * FROM items WHERE ip=?"
+        stmt = "SELECT * FROM items WHERE ip=? ORDER BY port"
 
         if self.execute_sql(stmt, (ip,)) is True:
             return self.cur.fetchall()
@@ -196,7 +170,7 @@ class Database():
         Get all hosts.
         """
         self.log.debug('Getting all hosts.')
-        stmt = "SELECT DISTINCT ip FROM items"
+        stmt = "SELECT DISTINCT ip FROM items ORDER BY ip"
 
         if self.execute_sql(stmt) is True:
             return self.cur.fetchall()
@@ -229,8 +203,16 @@ class Database():
         Get all potential attacks.
         """
         self.log.debug('Getting all potential attacks.')
-        stmt = "SELECT name, description FROM attacks"
+        stmt = "SELECT id, name, description FROM attacks"
         if self.execute_sql(stmt, commit=False) is True:
             return self.cur.fetchall()
         else:
             return []
+
+    def update_attack(self, aid, note):
+        """
+        Update the attack note.
+        """
+        self.log.debug('Updating attack {0}.'.format(aid))
+        stmt = "UPDATE attacks SET note=? WHERE id=?"
+        return self.execute_sql(stmt, (note, aid))
