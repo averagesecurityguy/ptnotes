@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block data %}
+
+<h2>Projects</h2>
+<h3>Create New Project</h3>
+<form action="/projects" method="post">
+    <input type="text" name="project_name" value="Project Name"/>
+    <input type="submit" value="Create Project" />
+</form>
+
+<h3>Current Projects</h3>
+{% if not projects %}
+	<p>No projects have been created yet.</p>
+{% else %}
+	<ul class="column4">
+	{% for project in projects %}
+		<li><a href="/project/{{ project['id'] }}">{{ project['name'] }}</a></li>
+	{% endfor %}
+    </ul>
+
+{% endif %}
+
+</div>
+{% endblock %}

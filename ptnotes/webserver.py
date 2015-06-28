@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import flask
+from functools import wraps
+import logging
 
 import database
 import importscan
@@ -10,6 +12,17 @@ import importscan
 # WEB SERVER
 #-----------------------------------------------------------------------------
 app = flask.Flask(__name__)
+project_file = None
+
+
+def project_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        logging.debug('Project File: {0}'.format(project_file))
+        if project_file is None:
+            return flask.redirect(flask.url_for('projects'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @app.route("/")
@@ -22,45 +35,25 @@ def about():
     return flask.render_template('about.html')
 
 
-@app.route("/hosts")
-def hosts():
-    """
-    Get a list of all the hosts and their open ports.
-    """
-    db = database.Database()
-    hosts = sorted(db.get_hosts())
-
-    return flask.render_template('hosts.html', hosts=hosts)
-
-
 @app.route('/host/<ip>')
+@project_required
 def host(ip):
     """
     Get all the information about a host.
     """
-    db = database.Database()
+    db = database.ScanDatabase(project_file)
     data = db.get_items(ip)
 
     return flask.render_template('host.html', host=ip, data=data)
 
 
-@app.route("/attacks")
-def attacks():
-    """
-    Get a list of all the built in attacks.
-    """
-    db = database.Database()
-    attacks = sorted(db.get_attacks())
-
-    return flask.render_template('attacks.html', attacks=attacks)
-
-
 @app.route('/attack/<aid>', methods=['GET', 'POST'])
+@project_required
 def get_attack(aid):
     """
     Get list of all the hosts possibly vulnerable to the attack.
     """
-    db = database.Database()
+    db = database.ScanDatabase(project_file)
 
     if flask.request.method == 'POST':
         note = flask.request.form['note']
@@ -72,12 +65,51 @@ def get_attack(aid):
 
 
 @app.route('/import', methods=['GET', 'POST'])
+@project_required
 def import_scan():
     message = None
 
     if flask.request.method == 'POST':
         file = flask.request.files['file']
-        importscan.Import(file.read())
+        importscan.Import(project_file, file.read())
         message = 'Import of {0} is complete.'.format(file.filename)
 
     return flask.render_template('import.html', message=message)
+
+
+@app.route('/projects', methods=['GET', 'POST'])
+def projects():
+    """
+    Get a list of all projects.
+    """
+    pdb = database.ProjectDatabase()
+
+    if flask.request.method == 'POST':
+        name = flask.request.form['project_name']
+        pdb.create_project(name)
+
+    projects = pdb.get_projects()
+
+    return flask.render_template('projects.html', projects=projects)
+
+
+@app.route('/project/<pid>')
+def get_project(pid):
+    """
+    Get list of all the hosts possibly vulnerable to the attack.
+    """
+    pdb = database.ProjectDatabase()
+    project = pdb.get_project(pid)
+
+    # Set the project file globally
+    global project_file
+    project_file = project['dbfile']
+
+    if project_file is None:
+        return flask.redirect(flask.url_for('projects'))
+    else:
+        db = database.ScanDatabase(project_file)
+        hosts = db.get_hosts()
+        attacks = db.get_attacks()
+
+        return flask.render_template('project.html', project=project['name'], hosts=hosts, attacks=attacks)

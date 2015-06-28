@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block data %}
+
+<h2>{{ project }}</h2>
+
+<h3>Imported Hosts</h3>
+{% if not hosts %}
+	<p>No hosts have been import yet, please import a Nessus or Nmap XML file.</p>
+{% else %}
+	<ul class="column6">
+	{% for host in hosts %}
+		<li><a href="/host/{{ host['ip'] }}">{{ host['ip'] }}</a></li>
+	{% endfor %}
+    </ul>
+{% endif %}
+
+<h3>Possible Attacks</h3>
+{% if not attacks %}
+    <p>No attacks are available yet.</p>
+{% else %}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    {% for a in attacks %}
+        <tr>
+            <td><a href="attack/{{ a['id'] }}">{{ a['name'] }}</a></td>
+            <td>{{ a['description'] }}</td>
+        </tr>
+    {% endfor %}
+
+    </table>
+{% endif %}
+
+</div>
+{% endblock %}

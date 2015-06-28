@@ -8,9 +8,9 @@ import database
 
 class Import():
 
-    def __init__(self, scan_data):
+    def __init__(self, db_file, scan_data):
         self.log = logging.getLogger('IMPORT')
-        self.db = database.Database()
+        self.db = database.ScanDatabase(db_file)
         self.scan_data = scan_data
         self.file_type = self.get_file_type(self.scan_data[:100])
 
