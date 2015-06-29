@@ -1,14 +1,18 @@
 {% extends "base.html" %}
 {% block data %}
 
-{% if message %}
-	<p class="message">{{ message }}</p>
+{% if results %}
+    <p class="message">
+    {% for result in results %}
+        The import for {{ result[0] }} {{ result[1] }}.<br />
+    {% endfor %}
+	</p>
 {% endif %}
 
 <h2>Scan Data</h2>
-<h3>Import a Nessus or Nmap XML file.</h3>
+<h3>Import Nessus or Nmap XML files.</h3>
 <form action="/import" method="post" enctype="multipart/form-data">
-  <input type="file" name="file" placeholder="Enter a Nessus or Nmap XML filename."></input><br />
+  <input type="file" name="scans[]" multiple placeholder="Enter a Nessus or Nmap XML filenames."></input><br />
   <input type="submit" value="Import">
 </form>
 {% endblock %}

@@ -1,40 +1,33 @@
-#!/usr/bin/env python
-
 import xml.etree.ElementTree
 import logging
 
 import database
+import errors
 
 
 class Import():
 
-    def __init__(self, db_file, scan_data):
+    def __init__(self, db_file):
         self.log = logging.getLogger('IMPORT')
         self.db = database.ScanDatabase(db_file)
-        self.scan_data = scan_data
-        self.file_type = self.get_file_type(self.scan_data[:100])
 
-        if self.file_type == 'Nessus':
-            self.import_nessus()
-        elif self.file_type == 'Nmap':
-            self.import_nmap()
-        else:
-            self.log.error('Unknown file type, skipping import.')
+    def import_scan(self, scan_data):
+        file_type = self.get_file_type(scan_data[:100])
 
-    def open_file(self):
-        """
-        Open the file for import.
-
-        Ensure the file we want to import exists and is a file before we
-        open it.
-        """
         try:
-            with open(self.filename) as file:
-                return file.read()
+            if file_type == 'Nessus':
+                self.import_nessus(scan_data)
+            elif file_type == 'Nmap':
+                self.import_nmap(scan_data)
+            else:
+                self.log.error('Unknown file type, skipping import.')
+                return 'Failed'
 
-        except IOError:
-            self.log.error('Unable to open file {0}.'.format(self.filename))
-            return ''
+        except (errors.ScanImportError):
+            self.log.error('Failed to parse scan file.')
+            return 'Failed'
+
+        return 'Succeeded'
 
     def get_file_type(self, header):
         """
@@ -48,18 +41,23 @@ class Import():
         else:
             return 'Unknown'
 
-    def import_nessus(self):
+    def import_nessus(self, scan_data):
         """
         Load the Nessus scan data into an XML structure and import the data.
         """
         self.log.info('Importing Nessus file.')
         # Load Nessus XML file into the tree and get the root element.
-        root = xml.etree.ElementTree.fromstring(self.scan_data)
+        try:
+            root = xml.etree.ElementTree.fromstring(scan_data)
 
-        for report in root.findall('Report'):
-            report_name = report.attrib['name']
-            self.log.info('Importing report {0}.'.format(report_name))
-            self.process_nessus_hosts(report.findall('ReportHost'))
+            for report in root.findall('Report'):
+                report_name = report.attrib['name']
+                self.log.info('Importing report {0}.'.format(report_name))
+                self.process_nessus_hosts(report.findall('ReportHost'))
+
+        except xml.etree.ElementTree.ParseError:
+            self.log.error('Unable to parse Nessus XML file.')
+            raise errors.ScanImportError
 
     def process_nessus_hosts(self, report_hosts):
         """
@@ -82,8 +80,8 @@ class Import():
         Process each report item in a host.
         """
         for item in report_items:
-            # text = xml.etree.ElementTree.tostring(item, encoding='utf-8')
-            # self.log.debug('Processing report item {0}.'.format(text))
+            text = xml.etree.ElementTree.tostring(item, encoding='utf-8')
+            self.log.debug('Processing report item {0}.'.format(text))
 
             # Deal with low-risk and higher vulnerabilities
             severity = int(item.attrib['severity'])
@@ -104,21 +102,3 @@ class Import():
 
             if self.db.create_item(ip, port, proto, note) is False:
                 self.log.error('Unable to create new Nessus item in database.')
-
-    # def ip_key(self, ip):
-    #     """
-    #     Return an IP address as a tuple of ints for sorting purposes.
-    #     """
-    #     return tuple(int(part) for part in ip.split('.'))
-
-
-
-
- 
-
-
-
-
-
-
-

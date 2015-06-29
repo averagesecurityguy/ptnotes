@@ -67,14 +67,17 @@ def get_attack(aid):
 @app.route('/import', methods=['GET', 'POST'])
 @project_required
 def import_scan():
-    message = None
+    results = []
 
     if flask.request.method == 'POST':
-        file = flask.request.files['file']
-        importscan.Import(project_file, file.read())
-        message = 'Import of {0} is complete.'.format(file.filename)
+        i = importscan.Import(project_file)
+        scans = flask.request.files.getlist("scans[]")
 
-    return flask.render_template('import.html', message=message)
+        for scan in scans:
+            success = i.import_scan(scan.read())
+            results.append((scan.filename, success))
+
+    return flask.render_template('import.html', results=results)
 
 
 @app.route('/projects', methods=['GET', 'POST'])
