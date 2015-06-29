@@ -36,7 +36,7 @@ class Import():
         self.log.debug('Checking file type with header {0}.'.format(header))
         if '<NessusClientData_v2>' in header:
             return 'Nessus'
-        elif 'Nmap' in header:
+        elif '<!DOCTYPE nmaprun>' in header:
             return 'Nmap'
         else:
             return 'Unknown'
@@ -102,3 +102,124 @@ class Import():
 
             if self.db.create_item(ip, port, proto, note) is False:
                 self.log.error('Unable to create new Nessus item in database.')
+
+    def import_nmap(self, scan_data):
+        """
+        Load the Nmap scan data into an XML structure and import the data.
+        """
+        self.log.info('Importing Nmap file.')
+        # Load Nmap XML file into the tree and get the root element.
+        try:
+            root = xml.etree.ElementTree.fromstring(scan_data)
+
+            for host in root.findall('host'):
+                self.log.debug('Getting IP address for host.')
+                address = host.find('address')
+                ip = address.attrib['addr']
+
+                self.log.info('Processing ip {0}.'.format(ip))
+                self.process_nmap_ports(ip, host.findall('ports/port'))
+                self.process_nmap_hostscripts(ip, host.findall('hostscript/script'))
+
+        except xml.etree.ElementTree.ParseError:
+            self.log.error('Unable to parse Nmap XML file.')
+            raise errors.ScanImportError
+
+    def process_nmap_ports(self, ip, nmap_ports):
+        """
+        Process each port in a host.
+        """
+        for nmap_port in nmap_ports:
+            text = xml.etree.ElementTree.tostring(nmap_port, encoding='utf-8')
+            self.log.debug('Processing port {0}.'.format(text))
+
+            # Skip any ports that are not open
+            if nmap_port.find('state').attrib['state'] != 'open':
+                continue
+
+            port = int(nmap_port.attrib['portid'])
+            proto = nmap_port.attrib['protocol']
+
+            # Create new item based on the service entry.
+            note = self.note_from_nmap_service(nmap_port.find('service'))
+            if self.db.create_item(ip, port, proto, note) is False:
+                self.log.error('Unable to create new Nmap item in database.')
+
+            # Create new item based on each script entry.
+            for script in nmap_port.findall('script'):
+                note = self.note_from_nmap_script(script)
+                if self.db.create_item(ip, port, proto, note) is False:
+                    self.log.error('Unable to create new Nmap item in database.')
+
+    def process_nmap_hostscripts(self, ip, scripts):
+        """
+        Process each of the host scripts.
+        """
+        for script in scripts:
+            text = xml.etree.ElementTree.tostring(script, encoding='utf-8')
+            self.log.debug('Processing host script {0}.'.format(text))
+
+            # Create new item based on each script entry.
+            for script in scripts:
+                note = self.note_from_nmap_script(script)
+                if self.db.create_item(ip, 0, 'tcp', note) is False:
+                    self.log.error('Unable to create new Nmap item in database.')
+
+    def note_from_nmap_service(self, service):
+        """
+        Build the note from the service information.
+        """
+        note = ''
+
+        if service is None:
+            return note
+
+        if service.attrib.get('ostype') is not None:
+            note += 'Operating System: {0}\n'.format(service.attrib['ostype'])
+
+        if service.attrib.get('product') is not None:
+            note += 'Service: {0}'.format(service.attrib['product'])
+        else:
+            note += 'Service: {0}'.format(service.attrib['name'])
+
+        if service.attrib.get('extrainfo') is not None:
+            note += 'Sevice Info: {0}'.format(service.attrib['extrainfo'])
+
+        return note
+
+
+    def note_from_nmap_script(self, script):
+        """
+        Build the note from the script information.
+        """
+        note = '--{0}--\n\n'.format(script.attrib['id'])
+
+        if script.attrib.get('output') is not None:
+            note += 'Output: {0}\n'.format(script.attrib['output'])
+
+        # Get Details
+        details = ''
+        for table in script.findall('table'):
+            tn = table.attrib['key'].capitalize()
+            for elem in table.findall('elem'):
+                key = elem.attrib.get('key')
+                val = elem.text
+
+                if key is None:
+                    details += '{0}\n'.format(': '.join([tn, val]))
+                else:
+                    details += '{0}\n'.format(': '.join([tn, key.capitalize(), val]))
+
+        for elem in script.findall('elem'):
+            key = elem.attrib.get('key')
+            val = elem.text
+
+            if key is None:
+                details += '{0}\n'.format(val)
+            else:
+                details += '{0}\n'.format(': '.join([key.capitalize(), val]))
+
+        if details != '':
+            note += 'Details:\n{0}'.format(details)
+
+        return note
