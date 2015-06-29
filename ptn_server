@@ -3,6 +3,12 @@
 import logging
 import os
 
+try:
+    os.mkdir('log')
+except OSError:
+    # Log directory already exists
+    pass
+
 log_file = os.path.join('log', 'ptnotes.log')
 
 logging.basicConfig(
