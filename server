@@ -18,5 +18,5 @@ logging.basicConfig(
 logging.info('Starting PTNotes server.')
 
 
-import ptnotes.webserver as server
+import ptn.webserver as server
 server.app.run(debug=False)
