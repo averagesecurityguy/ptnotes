@@ -220,6 +220,14 @@ class ScanDatabase(Database):
         stmt = "UPDATE attacks SET note=? WHERE id=?"
         return self.execute_sql(stmt, (note, aid))
 
+    def get_stats(self):
+        """
+        Get host and attack stats for the database.
+        """
+        hosts = len(self.get_hosts())
+        attacks = len(self.get_attacks())
+
+        return 'Hosts: {0}  Attacks {1}'.format(hosts, attacks)
 
 class ProjectDatabase(Database):
     """

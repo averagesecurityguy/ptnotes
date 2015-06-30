@@ -95,6 +95,9 @@ def projects():
         pdb.create_project(name)
 
     projects = pdb.get_projects()
+    for project in projects:
+        db = database.ScanDatabase(project['dbfile'])
+        project['stats'] = db.get_stats()
 
     return flask.render_template('projects.html', projects=projects)
 
@@ -102,7 +105,7 @@ def projects():
 @app.route('/project/<pid>')
 def get_project(pid):
     """
-    Get list of all the hosts possibly vulnerable to the attack.
+    Get a project, including the list of hosts attacks.
     """
     pdb = database.ProjectDatabase()
     project = pdb.get_project(pid)
@@ -120,3 +123,13 @@ def get_project(pid):
 
         return flask.render_template('project.html', pid=pid, project=project['name'], 
                                      hosts=hosts, attacks=attacks)
+
+@app.route('/project/<pid>/delete')
+def delete_project(pid):
+    """
+    Delete the specified project.
+    """
+    pdb = database.ProjectDatabase()
+    project = pdb.delete_project(pid)
+
+    return flask.redirect(flask.url_for('projects'))

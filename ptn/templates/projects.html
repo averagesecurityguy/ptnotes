@@ -12,6 +12,20 @@
 {% if not projects %}
 	<p>No projects have been created yet.</p>
 {% else %}
+    <table>
+        <tr>
+            <th>Project</th>
+            <th>Stats</th>
+            <th>Actions</th>
+        </tr>
+        {% for p in projects %}
+            <tr>
+                <td>{{ p['name'] }}</td>
+                <td>{{ p['stats'] }}</td>
+                <td><a href="/project/{{ p['id'] }}/delete">Delete</a></td>
+            </tr>
+        {% endfor %}
+    </table>
 	<ul class="column4">
 	{% for project in projects %}
 		<li><a href="/project/{{ project['id'] }}">{{ project['name'] }}</a></li>
