@@ -20,18 +20,12 @@
         </tr>
         {% for p in projects %}
             <tr>
-                <td>{{ p['name'] }}</td>
-                <td>{{ p['stats'] }}</td>
+                <td><a href="/project/{{ p['id'] }}">{{ p['name'] }}</a></td>
+                <td>{{ stats[p['id']] }}</td>
                 <td><a href="/project/{{ p['id'] }}/delete">Delete</a></td>
             </tr>
         {% endfor %}
     </table>
-	<ul class="column4">
-	{% for project in projects %}
-		<li><a href="/project/{{ project['id'] }}">{{ project['name'] }}</a></li>
-	{% endfor %}
-    </ul>
-
 {% endif %}
 
 </div>

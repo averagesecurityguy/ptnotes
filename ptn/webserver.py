@@ -89,6 +89,7 @@ def projects():
     Get a list of all projects.
     """
     pdb = database.ProjectDatabase()
+    stats = {}
 
     if flask.request.method == 'POST':
         name = flask.request.form['project_name']
@@ -97,9 +98,9 @@ def projects():
     projects = pdb.get_projects()
     for project in projects:
         db = database.ScanDatabase(project['dbfile'])
-        project['stats'] = db.get_stats()
+        stats[project['id']] = db.get_stats() 
 
-    return flask.render_template('projects.html', projects=projects)
+    return flask.render_template('projects.html', projects=projects, stats=stats)
 
 
 @app.route('/project/<pid>')
