@@ -3,6 +3,12 @@
 
 <h2>{{ project }}</h2>
 
+<h3>Import Scan Data</h3>
+<form action="/import/{{ pid }}" method="post" enctype="multipart/form-data">
+  <input type="file" name="scans[]" multiple placeholder="Enter a Nessus or Nmap XML filenames."></input><br />
+  <input type="submit" value="Import">
+</form>
+
 <h3>Imported Hosts</h3>
 {% if not hosts %}
 	<p>No hosts have been import yet, please import a Nessus or Nmap XML file.</p>

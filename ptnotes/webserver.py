@@ -64,20 +64,23 @@ def get_attack(aid):
     return flask.render_template('attack.html', attack=attack, hosts=hosts)
 
 
-@app.route('/import', methods=['GET', 'POST'])
-@project_required
-def import_scan():
-    results = []
+@app.route('/import/<pid>', methods=['POST'])
+def import_scan(pid):
+    """
+    Import scan data into the database associated with the pid.
+    """
 
-    if flask.request.method == 'POST':
-        i = importscan.Import(project_file)
-        scans = flask.request.files.getlist("scans[]")
+    # Get our project
+    pdb = database.ProjectDatabase()
+    project = pdb.get_project(pid)
 
-        for scan in scans:
-            success = i.import_scan(scan.read())
-            results.append((scan.filename, success))
+    i = importscan.Import(project['dbfile'])
+    scans = flask.request.files.getlist("scans[]")
 
-    return flask.render_template('import.html', results=results)
+    for scan in scans:
+        i.import_scan(scan.read())
+
+    return flask.redirect(flask.url_for('get_project', pid=pid))
 
 
 @app.route('/projects', methods=['GET', 'POST'])
@@ -115,4 +118,5 @@ def get_project(pid):
         hosts = db.get_hosts()
         attacks = db.get_attacks()
 
-        return flask.render_template('project.html', project=project['name'], hosts=hosts, attacks=attacks)
+        return flask.render_template('project.html', pid=pid, project=project['name'], 
+                                     hosts=hosts, attacks=attacks)
