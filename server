@@ -3,6 +3,14 @@
 import logging
 import os
 
+SERVER = '127.0.0.1'
+PORT = 5000
+LOG_LEVEL = logging.INFO
+
+#-----------------------------------------------------------------------------
+# Do not edit anything below this line.
+#-----------------------------------------------------------------------------
+
 try:
     os.mkdir('log')
 except OSError:
@@ -12,11 +20,11 @@ except OSError:
 log_file = os.path.join('log', 'ptnotes.log')
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=LOG_LEVEL,
     filename=log_file)
 
 logging.info('Starting PTNotes server.')
-
+print('Starting PTNotes server on {0}:{1}'.format(SERVER, PORT))
 
 import ptn.webserver as server
-server.app.run(debug=False)
+server.app.run(host=SERVER, port=PORT, debug=False)
