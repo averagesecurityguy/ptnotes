@@ -9,24 +9,6 @@
   <input type="submit" value="Import">
 </form>
 
-<h3>Imported Hosts</h3>
-{% if not hosts %}
-	<p>No hosts have been import yet, please import a Nessus or Nmap XML file.</p>
-{% else %}
-	<table>
-        <tr>
-            <th>Host</th>
-            <th>Ports</th>
-        </tr>
-        {% for h in hosts %}
-            <tr>
-                <td><a href="/host/{{ h['ip'] }}">{{ h['ip'] }}</a></td>
-                <td>{{ ', '.join(ports[h['ip']]) }}</td>
-            </tr>
-        {% endfor %}
-    </table>
-{% endif %}
-
 <h3>Possible Attacks</h3>
 {% if not attacks %}
     <p>No attacks are available yet.</p>
@@ -46,5 +28,22 @@
     </table>
 {% endif %}
 
-</div>
+<h3>Imported Hosts</h3>
+{% if not hosts %}
+	<p>No hosts have been import yet, please import a Nessus or Nmap XML file.</p>
+{% else %}
+	<table>
+        <tr>
+            <th>Host</th>
+            <th>Ports</th>
+        </tr>
+        {% for h in hosts %}
+            <tr>
+                <td><a href="/host/{{ h['ip'] }}">{{ h['ip'] }}</a></td>
+                <td>{{ ', '.join(ports[h['ip']]) }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
 {% endblock %}
