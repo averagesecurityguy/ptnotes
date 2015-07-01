@@ -102,7 +102,7 @@ class ScanDatabase(Database):
 
         attacks = '''
         CREATE TABLE IF NOT EXISTS attacks (
-            id integer primary key autoincrement,
+            id integer,
             name text,
             port integer,
             protocol text,
@@ -130,13 +130,17 @@ class ScanDatabase(Database):
         #
         # Insert the attacks into the database.
         #
-        put = "INSERT INTO attacks (name, description, port, protocol) VALUES(?,?,?,?)"
-        get = "SELECT name FROM attacks WHERE port=? AND protocol=?"
+        put = "INSERT INTO attacks (id, name, description, port, protocol) VALUES (?,?,?,?,?)"
+        ids = []
 
         for a in attacks:
-            self.execute_sql(get, (a['port'], a['protocol']), commit=False)
-            if self.cur.fetchone() is None:
-                self.cur.execute(put, (a['name'], a['description'], a['port'], a['protocol']))
+            if a['id'] in ids:
+                self.log.error('Attack {0} already in database.'.format(a['id']))
+                continue
+
+            if self.execute_sql(put, (a['id'], a['name'], a['description'], a['port'], a['protocol'])) is True:
+                self.log.info('Successfully added attack {0}.'.format(a['name']))
+                ids.append(a['id'])
             else:
                 self.log.error('Could not load attack {0}.'.format(a['name']))
 
@@ -204,14 +208,14 @@ class ScanDatabase(Database):
         if self.execute_sql(stmt, (aid,), commit=False) is True:
             attack = self.cur.fetchone()
 
-            stmt = "SELECT * FROM items WHERE port=? AND protocol=?"
+            stmt = "SELECT DISTINCT ip FROM items WHERE port=? AND protocol=?"
             if self.execute_sql(stmt, (attack['port'], attack['protocol']), commit=False) is True:
-                hosts = self.cur.fetchall()
+                hosts = [h['ip'] for h in self.cur.fetchall()]
                 return attack, hosts
             else:
-                return None, None
+                return None, []
         else:
-            return None, None
+            return None, []
 
     def get_attacks(self):
         """

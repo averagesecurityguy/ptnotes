@@ -10,14 +10,10 @@
 </form>
 
 <h3>Hosts</h3>
-{% if not hosts %}
-	<p>No hosts are vulnerable to this attack.</p>
-{% else %}
-	<ul class="column4">
-	{% for host in hosts %}
-		<li><a href="/host/{{ host['ip'] }}">{{ host['ip'] }}</a></li>
-	{% endfor %}
-	</ul>
-{% endif %}
+<ul class="column4">
+{% for host in hosts %}
+	<li><a href="/host/{{ host }}">{{ host }}</a></li>
+{% endfor %}
+</ul>
 
 {% endblock %}
