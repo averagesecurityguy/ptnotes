@@ -159,12 +159,24 @@ class ScanDatabase(Database):
         stmt = "INSERT INTO items (ip, port, protocol, note) VALUES(?,?,?,?)"
         return self.execute_sql(stmt, (ip, port, protocol, note))
 
-    def get_items(self, ip):
+    def get_host(self, ip):
         """
         Get all items associated with an IP.
         """
         self.log.debug('Getting all items for {0}.'.format(ip))
         stmt = "SELECT * FROM items WHERE ip=? ORDER BY port"
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            return self.cur.fetchall()
+        else:
+            return []
+
+    def get_ports(self, ip):
+        """
+        Get all ports associated with an IP.
+        """
+        self.log.debug('Getting all ports for {0}.'.format(ip))
+        stmt = "SELECT DISTINCT port from items WHERE ip=? ORDER BY ip"
 
         if self.execute_sql(stmt, (ip,)) is True:
             return self.cur.fetchall()

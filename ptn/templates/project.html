@@ -13,11 +13,18 @@
 {% if not hosts %}
 	<p>No hosts have been import yet, please import a Nessus or Nmap XML file.</p>
 {% else %}
-	<ul class="column6">
-	{% for host in hosts %}
-		<li><a href="/host/{{ host['ip'] }}">{{ host['ip'] }}</a></li>
-	{% endfor %}
-    </ul>
+	<table>
+        <tr>
+            <th>Host</th>
+            <th>Ports</th>
+        </tr>
+        {% for h in hosts %}
+            <tr>
+                <td><a href="/host/{{ h['ip'] }}">{{ h['ip'] }}</a></td>
+                <td>{{ ', '.join(ports[h['ip']]) }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 {% endif %}
 
 <h3>Possible Attacks</h3>

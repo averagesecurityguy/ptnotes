@@ -42,7 +42,7 @@ def host(ip):
     Get all the information about a host.
     """
     db = database.ScanDatabase(project_file)
-    data = db.get_items(ip)
+    data = db.get_host(ip)
 
     return flask.render_template('host.html', host=ip, data=data)
 
@@ -110,6 +110,7 @@ def get_project(pid):
     """
     pdb = database.ProjectDatabase()
     project = pdb.get_project(pid)
+    ports = {}
 
     # Set the project file globally
     global project_file
@@ -122,8 +123,14 @@ def get_project(pid):
         hosts = db.get_hosts()
         attacks = db.get_attacks()
 
-        return flask.render_template('project.html', pid=pid, project=project['name'], 
-                                     hosts=hosts, attacks=attacks)
+        for host in hosts:
+            ip = host['ip']
+            port_list = db.get_ports(ip)
+            ports[ip] = [str(p['port']) for p in port_list if p['port'] != 0]
+
+        return flask.render_template('project.html', pid=pid,
+                                     project=project['name'], hosts=hosts,
+                                     ports=ports, attacks=attacks)
 
 @app.route('/project/<pid>/delete')
 def delete_project(pid):
