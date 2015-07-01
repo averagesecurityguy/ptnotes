@@ -175,15 +175,15 @@ class Import():
             return note
 
         if service.attrib.get('ostype') is not None:
-            note += 'Operating System: {0}\n'.format(service.attrib['ostype'])
+            note += 'Operating System: {0}\n'.format(service.attrib.get('ostype', ''))
 
         if service.attrib.get('product') is not None:
-            note += 'Service: {0}'.format(service.attrib['product'])
+            note += 'Service: {0}'.format(service.attrib.get('product', ''))
         else:
-            note += 'Service: {0}'.format(service.attrib['name'])
+            note += 'Service: {0}'.format(service.attrib.get('name', ''))
 
         if service.attrib.get('extrainfo') is not None:
-            note += 'Sevice Info: {0}'.format(service.attrib['extrainfo'])
+            note += 'Sevice Info: {0}'.format(service.attrib.get('extrainfo', ''))
 
         return note
 
@@ -192,32 +192,34 @@ class Import():
         """
         Build the note from the script information.
         """
-        note = '--{0}--\n\n'.format(script.attrib['id'])
+        note = '--{0}--\n\n'.format(script.attrib.get('id', ''))
 
         if script.attrib.get('output') is not None:
-            note += 'Output: {0}\n'.format(script.attrib['output'])
+            note += 'Output: {0}\n'.format(script.attrib.get('output', ''))
 
         # Get Details
         details = ''
         for table in script.findall('table'):
-            tn = table.attrib['key'].capitalize()
+            tn = table.attrib.get('key')
             for elem in table.findall('elem'):
                 key = elem.attrib.get('key')
                 val = elem.text
 
-                if key is None:
-                    details += '{0}\n'.format(': '.join([tn, val]))
-                else:
-                    details += '{0}\n'.format(': '.join([tn, key.capitalize(), val]))
+                if tn is not None:
+                    details += '{0}: '.format(tn.capitalize())
+                if key is not None:
+                    details += '{0}: '.format(key.capitalize())
+                
+                details += '{0}\n'.format(val)
 
         for elem in script.findall('elem'):
             key = elem.attrib.get('key')
             val = elem.text
 
-            if key is None:
-                details += '{0}\n'.format(val)
-            else:
-                details += '{0}\n'.format(': '.join([key.capitalize(), val]))
+            if key is not None:
+                details += '{0}: '.format(key.capitalize())
+            
+            details += '{0}\n'.format(val)
 
         if details != '':
             note += 'Details:\n{0}'.format(details)
