@@ -89,11 +89,13 @@ class Import():
             note = '--{0}--\n\n'.format(item.attrib['pluginID'])
             description = item.find('description')
             output = item.find('plugin_output')
-            if output is not None:
-                note = note + output.text.strip('\n')
-            else:
-                note = note + description.text
 
+            if description is not None:
+                note += 'Description:\n{0}'.format(description)
+
+            if output is not None:
+                note += 'Output:\n{0}'.format(output.text.strip('\n'))
+           
             if self.db.create_item(ip, port, proto, note) is False:
                 self.log.error('Unable to create new Nessus item in database.')
 
