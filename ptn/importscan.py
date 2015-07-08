@@ -83,12 +83,6 @@ class Import():
             text = xml.etree.ElementTree.tostring(item, encoding='utf-8')
             self.log.debug('Processing report item {0}.'.format(text))
 
-            # Deal with low-risk and higher vulnerabilities
-            severity = int(item.attrib['severity'])
-            self.log.debug('Severity: {0}'.format(severity))
-            if severity == 0:
-                continue
-
             port = int(item.attrib['port'])
             proto = item.attrib['protocol']
 
