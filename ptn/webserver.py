@@ -6,6 +6,7 @@ import logging
 
 import database
 import importscan
+import attacks
 
 
 #-----------------------------------------------------------------------------
@@ -57,9 +58,10 @@ def get_attack(aid):
 
     if flask.request.method == 'POST':
         note = flask.request.form['note']
-        db.update_attack(aid, note)
+        db.update_attack_note(aid, note)
 
-    attack, hosts = db.get_attack(aid)
+    attack = db.get_attack(aid)
+    hosts = attack['hosts'].split(',')
 
     return flask.render_template('attack.html', attack=attack, hosts=hosts)
 
@@ -79,6 +81,9 @@ def import_scan(pid):
 
     for scan in scans:
         i.import_scan(scan.read())
+
+    a = attacks.Attack(project['dbfile'])
+    a.find_attacks()
 
     return flask.redirect(flask.url_for('get_project', pid=pid))
 

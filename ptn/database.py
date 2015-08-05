@@ -14,7 +14,6 @@ import validate
 # Initialize the database once when we import the module.
 #
 PRJ_FILE = os.path.join('data', 'projects.sqlite')
-ATK_FILE = os.path.join('data', 'attacks.json')
 
 
 class Database():
@@ -102,11 +101,10 @@ class ScanDatabase(Database):
 
         attacks = '''
         CREATE TABLE IF NOT EXISTS attacks (
-            id integer,
+            id integer primary key autoincrement,
             name text,
-            port integer,
-            protocol text,
             description text,
+            hosts,
             note text
         )
         '''
@@ -115,34 +113,6 @@ class ScanDatabase(Database):
         if (ires is False) or (ares is False):
             self.log.critical('Could not initialize database: {0}.'.format(self.filename))
             return False
-
-        #
-        # Load our attacks from the JSON file.
-        #
-        try:
-            with open(ATK_FILE) as f:
-                attacks = json.loads(f.read())
-
-        except (IOError, ValueError) as e:
-            self.log.critical('Could not load attack file: {0}'.format(e))
-            return False
-
-        #
-        # Insert the attacks into the database.
-        #
-        put = "INSERT INTO attacks (id, name, description, port, protocol) VALUES (?,?,?,?,?)"
-        ids = []
-
-        for a in attacks:
-            if a['id'] in ids:
-                self.log.error('Attack {0} already in database.'.format(a['id']))
-                continue
-
-            if self.execute_sql(put, (a['id'], a['name'], a['description'], a['port'], a['protocol'])) is True:
-                self.log.info('Successfully added attack {0}.'.format(a['name']))
-                ids.append(a['id'])
-            else:
-                self.log.error('Could not load attack {0}.'.format(a['name']))
 
         return True
 
@@ -199,40 +169,66 @@ class ScanDatabase(Database):
         else:
             return []
 
+    def create_attack(self, name, description, hosts):
+        """
+        Create a new attack in the database.
+        """
+        self.log.debug('Creating new attack for {0}.'.format(name))
+
+        stmt = "INSERT INTO attacks (name, description, hosts, note) VALUES(?,?,?,?)"
+        return self.execute_sql(stmt, (name, description, ','.join(hosts), ''))
+
+    def get_attack_by_name(self, name):
+        """
+        Get an attack id by name.
+        """
+        self.log.debug('Getting attack id for {0}.'.format(name))
+
+        stmt = "SELECT id, note FROM attacks WHERE name=?"
+        if self.execute_sql(stmt, (name, ), commit=False) is True:
+            return self.cur.fetchone()
+        else:
+            return None
+
     def get_attack(self, aid):
         """
         Get an attack and a list of potential targets.
         """
         self.log.debug('Getting attack {0}.'.format(aid))
+
         stmt = "SELECT * FROM attacks WHERE id=?"
         if self.execute_sql(stmt, (aid,), commit=False) is True:
-            attack = self.cur.fetchone()
-
-            stmt = "SELECT DISTINCT ip FROM items WHERE port=? AND protocol=?"
-            if self.execute_sql(stmt, (attack['port'], attack['protocol']), commit=False) is True:
-                hosts = [h['ip'] for h in self.cur.fetchall()]
-                return attack, hosts
-            else:
-                return None, []
+            return self.cur.fetchone()
         else:
-            return None, []
+            return None
 
     def get_attacks(self):
         """
         Get all potential attacks.
         """
         self.log.debug('Getting all potential attacks.')
+
         stmt = "SELECT id, name, description FROM attacks"
         if self.execute_sql(stmt, commit=False) is True:
             return self.cur.fetchall()
         else:
             return []
 
-    def update_attack(self, aid, note):
+    def update_attack_hosts(self, aid, hosts):
+        """
+        Update the attack hosts.
+        """
+        self.log.debug('Updating hosts for attack {0}.'.format(aid))
+
+        stmt = "UPDATE attacks SET hosts=? WHERE id=?"
+        return self.execute_sql(stmt, (','.join(hosts), aid))
+
+    def update_attack_note(self, aid, note):
         """
         Update the attack note.
         """
-        self.log.debug('Updating attack {0}.'.format(aid))
+        self.log.debug('Updating note for attack {0}.'.format(aid))
+
         stmt = "UPDATE attacks SET note=? WHERE id=?"
         return self.execute_sql(stmt, (note, aid))
 
@@ -240,10 +236,48 @@ class ScanDatabase(Database):
         """
         Get host and attack stats for the database.
         """
+        self.log.debug('Gathering stats.')
+
         hosts = len(self.get_hosts())
         attacks = len(self.get_attacks())
 
         return 'Hosts: {0}  Attacks {1}'.format(hosts, attacks)
+
+    def get_hosts_by_port(self, port, protocol):
+        """
+        Return a list of hosts with the specified port and protocol.
+        """
+        if port is None:
+            return []
+        else:
+            self.log.debug('Getting attacks associated with port {0}.'.format(port))
+
+            stmt = "SELECT distinct ip FROM items WHERE port=? AND protocol=?"
+            if self.execute_sql(stmt, (port, protocol)) is True:
+                return [h['ip'] for h in self.cur.fetchall()]
+            else:
+                return []
+
+    def get_hosts_by_keywords(self, keywords):
+        """
+        Return a list of hosts with the specified protocol.
+        """
+        if keywords is None:
+            return []
+        else:
+            self.log.debug('Getting attacks associated with keywords {0}.'.format(','.join(keywords)))
+
+            stmt = "SELECT distinct ip FROM items WHERE "
+            stmt += ' OR '.join(["note LIKE ?" for i in xrange(len(keywords))])
+            kw_strs = tuple(['%{0}%'.format(kw) for kw in keywords])
+
+            if self.execute_sql(stmt, kw_strs) is True:
+                hosts = [h['ip'] for h in self.cur.fetchall()]
+                self.log.debug(hosts)
+                return hosts
+            else:
+                return []
+
 
 class ProjectDatabase(Database):
     """

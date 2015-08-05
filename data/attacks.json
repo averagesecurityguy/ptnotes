@@ -1,19 +1,24 @@
 [
     {
-        "id": 1,
         "name": "SSH Brute-force.",
         "description": "Many devices have common SSH username and password combinations.",
         "port": 22,
         "protocol": "tcp"
     },
     {
+        "name": "Telnet Servers",
+        "description": "Many devices have common telnet username and password combinations.",
+        "port": 23,
+        "protocol": "tcp"
+    },
+    {
         "name": "SSLv2/SSLv3",
         "description": "SSL version 2 and version 3 should be disabled in most production environments.",
-        "keywords": "--sslv2--, --sslv3--, --66334--, --20007--, --56984--"
+        "keywords": ["--sslv2--", "--sslv3--", "--66334--", "--20007--", "--56984--"]
     },
     {
         "name": "POODLE",
-        "description": "An SSLv3/TLSv1 padding oracle attack."
-        "keywords": "--78479--"
+        "description": "An SSLv3/TLSv1 padding oracle attack.",
+        "keywords": ["--78479--"]
     }
 ]
