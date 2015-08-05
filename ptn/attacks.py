@@ -61,29 +61,8 @@ class Attack():
         """
         hosts = []
 
-        hosts.extend(db.get_vuln_ports(a.get('port')))
-        hosts.extend(db.get_vuln_proto(a.get('protocol')))
-        hosts.extend(db.get_vuln_kwrds(a.get('keywords')))
+        hosts.extend(db.get_hosts_by_port(a.get('port')))
+        hosts.extend(db.get_hosts_by_protocol(a.get('protocol')))
+        hosts.extend(db.get_hosts_keywords(a.get('keywords')))
 
         return list(set(hosts))
-
-        stmt = "SELECT DISTINCT ip FROM items WHERE"
-
-        if port is not None:
-            stmt += "port=? AND "
-
-        if protocol is not None:
-            stmt += "protocol=? AND "
-
-        if keywords is not None:
-            for kw in keywords.split(','):
-                stmt += "note LIKE %?% AND"
-
-        stmt = stmt.rstrip(' AND')
-
-        if self.execute_sql(stmt, (attack['port'], attack['protocol'], attack['keywords']), commit=False) is True:
-            hosts = [h['ip'] for h in self.cur.fetchall()]
-
-        return hosts
-
-
