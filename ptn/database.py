@@ -101,9 +101,10 @@ class ScanDatabase(Database):
 
         attacks = '''
         CREATE TABLE IF NOT EXISTS attacks (
-            id integer,
+            id integer primary key autoincrement,
             name text,
             description text,
+            hosts,
             note text
         )
         '''
@@ -168,14 +169,14 @@ class ScanDatabase(Database):
         else:
             return []
 
-    def create_attack(sef, name, description, hosts):
+    def create_attack(self, name, description, hosts):
         """
         Create a new attack in the database.
         """
         self.log.debug('Creating new attack for {0}.'.format(name))
 
         stmt = "INSERT INTO attacks (name, description, hosts, note) VALUES(?,?,?,?)"
-        return self.execute_sql(stmt, (name, description, hosts, ''))
+        return self.execute_sql(stmt, (name, description, ','.join(hosts), ''))
 
     def get_attack_by_name(self, name):
         """
@@ -196,13 +197,17 @@ class ScanDatabase(Database):
         self.log.debug('Getting attack {0}.'.format(aid))
 
         stmt = "SELECT * FROM attacks WHERE id=?"
-        return self.execute_sql(stmt, (aid,), commit=False)
+        if self.execute_sql(stmt, (aid,), commit=False) is True:
+            return self.cur.fetchone()
+        else:
+            return None
 
     def get_attacks(self):
         """
         Get all potential attacks.
         """
         self.log.debug('Getting all potential attacks.')
+
         stmt = "SELECT id, name, description FROM attacks"
         if self.execute_sql(stmt, commit=False) is True:
             return self.cur.fetchall()
@@ -231,49 +236,45 @@ class ScanDatabase(Database):
         """
         Get host and attack stats for the database.
         """
+        self.log.debug('Gathering stats.')
+
         hosts = len(self.get_hosts())
         attacks = len(self.get_attacks())
 
         return 'Hosts: {0}  Attacks {1}'.format(hosts, attacks)
 
-    def get_hosts_by_port(port):
+    def get_hosts_by_port(self, port, protocol):
         """
-        Return a list of hosts with the specified port.
+        Return a list of hosts with the specified port and protocol.
         """
         if port is None:
             return []
         else:
-            stmt = "SELECT distinct ip FROM items WHERE port=?"
-            if self.execute_sql(stmt, (port, )) is True:
+            self.log.debug('Getting attacks associated with port {0}.'.format(port))
+
+            stmt = "SELECT distinct ip FROM items WHERE port=? AND protocol=?"
+            if self.execute_sql(stmt, (port, protocol)) is True:
                 return [h['ip'] for h in self.cur.fetchall()]
             else:
                 return []
 
-    def get_hosts_by_protocol(proto):
-        """
-        Return a list of hosts with the specified protocol.
-        """
-        if proto is None:
-            return []
-        else:
-            stmt = "SELECT distinct ip FROM items WHERE proto=?"
-            if self.execute_sql(stmt, (proto, )) is True:
-                return [h['ip'] for h in self.cur.fetchall()]
-            else:
-                return []
-
-    def get_hosts_by_keywords(keywords):
+    def get_hosts_by_keywords(self, keywords):
         """
         Return a list of hosts with the specified protocol.
         """
         if keywords is None:
             return []
         else:
-            stmt = "SELECT distinct ip FROM items WHERE"
-            stmt += ' OR '.join(['LIKE %?%' for i in xrange(len(keywords))])
+            self.log.debug('Getting attacks associated with keywords {0}.'.format(','.join(keywords)))
 
-            if self.execute_sql(stmt, tuple(keywords)) is True:
-                return [h['ip'] for h in self.cur.fetchall()]
+            stmt = "SELECT distinct ip FROM items WHERE "
+            stmt += ' OR '.join(["note LIKE ?" for i in xrange(len(keywords))])
+            kw_strs = tuple(['%{0}%'.format(kw) for kw in keywords])
+
+            if self.execute_sql(stmt, kw_strs) is True:
+                hosts = [h['ip'] for h in self.cur.fetchall()]
+                self.log.debug(hosts)
+                return hosts
             else:
                 return []
 
