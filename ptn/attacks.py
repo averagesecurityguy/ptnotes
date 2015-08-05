@@ -18,7 +18,7 @@ import database
 ATK_FILE = os.path.join('data', 'attacks.json')
 
 class Attack():
-    def __init__(self, db):
+    def __init__(self, project_file):
         self.db = database.ScanDatabase(project_file)
         self.log = logging.getLogger('ATTACK')
         self.attacks = self.load_attacks(ATK_FILE)
@@ -29,6 +29,7 @@ class Attack():
         """
         attacks = []
 
+        self.log.info('Loading attack file.')
         try:
             with open(filename) as f:
                 attacks = json.loads(f.read())
@@ -44,25 +45,30 @@ class Attack():
         described in the attack file.
         """
         for a in self.attacks:
+            self.log.info('Finding attacks for {0}.'.format(a['name']))
             hosts = self.get_hosts(a)
 
-            #
-            # If we already have an attack with this name and there is a note
-            # attached to it, preserve the note.
-            attack = db.get_attack_by_name(a['name'])
-            if attack is None:
-                db.create_attack(a['name'], a['description'], hosts)
-            else:
-                db.update_attack_hosts(attack['id'], hosts)
+            if hosts != []:
+                # If the attack does not exist, create it. If it does exist then
+                # add hosts to it.
+                attack = self.db.get_attack_by_name(a['name'])
+                if attack is None:
+                    self.db.create_attack(a['name'], a['description'], hosts)
+                else:
+                    self.db.update_attack_hosts(attack['id'], hosts)
 
-    def get_hosts(attack):
+    def get_hosts(self, attack):
         """
         Get all hosts matching the attack data.
         """
+        self.log.debug('Getting hosts for {0}.'.format(attack['name']))
         hosts = []
 
-        hosts.extend(db.get_hosts_by_port(a.get('port')))
-        hosts.extend(db.get_hosts_by_protocol(a.get('protocol')))
-        hosts.extend(db.get_hosts_keywords(a.get('keywords')))
+        hosts.extend(self.db.get_hosts_by_port(attack.get('port'), attack.get('protocol')))
+        hosts.extend(self.db.get_hosts_by_keywords(attack.get('keywords')))
 
-        return list(set(hosts))
+        self.log.debug('Found {0} total hosts.'.format(len(hosts)))
+        hosts = list(set(hosts))
+        self.log.debug('Found {0} unique hosts.'.format(len(hosts)))
+
+        return hosts
