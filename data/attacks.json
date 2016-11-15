@@ -20,5 +20,25 @@
         "name": "POODLE",
         "description": "An SSLv3/TLSv1 padding oracle attack.",
         "keywords": ["--78479--"]
+    },
+    {
+        "name": "User Accounts",
+        "description": "Local and Domain user accounts identified on the machine.",
+        "keywords": ["--56211--", "--10860--", "--10399--"]
+    },
+    {
+        "name": "Open Windows Shares",
+        "description": "Windows shared folders that allow anonymous access.",
+        "keywords": ["--42411--"]
+    },
+    {
+        "name": "Open NFS Shares",
+        "description": "NFS shared folders that do not require authentication.",
+        "keywords": ["--11356--", "--42256--"]
+    },
+    {
+        "name": "Open AFP Shares",
+        "description": "AFP shared folders that do not require authentication.",
+        "keywords": ["--43580--"]
     }
 ]
