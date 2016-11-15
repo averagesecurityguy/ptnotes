@@ -91,11 +91,11 @@ class Import():
             output = item.find('plugin_output')
 
             if description is not None:
-                note += 'Description:\n{0}'.format(description)
+                note += 'Description:\n{0}'.format(description.text.strip('\n'))
 
             if output is not None:
                 note += 'Output:\n{0}'.format(output.text.strip('\n'))
-           
+
             if self.db.create_item(ip, port, proto, note) is False:
                 self.log.error('Unable to create new Nessus item in database.')
 
@@ -205,7 +205,7 @@ class Import():
                     details += '{0}: '.format(tn.capitalize())
                 if key is not None:
                     details += '{0}: '.format(key.capitalize())
-                
+
                 details += '{0}\n'.format(val)
 
         for elem in script.findall('elem'):
@@ -214,7 +214,7 @@ class Import():
 
             if key is not None:
                 details += '{0}: '.format(key.capitalize())
-            
+
             details += '{0}\n'.format(val)
 
         if details != '':
