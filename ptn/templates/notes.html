@@ -3,10 +3,6 @@
 {% for note in notes %}
     <h3>{{ note[0] }}</h3>
 
-    <p>
-        {% for line in note[1].split('\n') %}
-            {{ line }}<br />
-        {% endfor %}
-    </p>
+    <pre>{{ note[1] }}</pre>
 {% endfor %}
 {% endblock %}
