@@ -40,5 +40,45 @@
         "name": "Open AFP Shares",
         "description": "AFP shared folders that do not require authentication.",
         "keywords": ["--43580--"]
+    },
+    {
+        "name": "Apache Tomcat Credentials",
+        "description": "Weak or Default Apache Tomcat Credentials",
+        "keywords": ["--34970--"]
+    },
+    {
+        "name": "SNMP Default Community Strings",
+        "description": "SNMP Servers that allow read and/or write access with default community strings.",
+        "keywords": ["--10264--", "--41028--"]
+    },
+    {
+        "name": "Unauthenticated VNC Access",
+        "description": "VNC servers that do not require authentication.",
+        "keywords": ["--26925--"]
+    },
+    {
+        "name": "IPMI Authentication Bypass",
+        "description": "IPMI authentication bypass using cipher suite zero.",
+        "keywords": ["--68931--"]
+    },
+    {
+        "name": "Web Server Detection",
+        "description": "Many web servers have easily exploited vulnerabilities.",
+        "keywords": ["--10107--"]
+    },
+    {
+        "name": "Default Credentials",
+        "description": "These services allow access using default credentials.",
+        "keywords": ["default credentials"]
+    },
+    {
+        "name": "Directory Traversal",
+        "description": "These web servers are vulnerable to directory traversal flaws.",
+        "keywords": ["directory traversal"]
+    },
+    {
+        "name": "Metasploit",
+        "description": "These devices have vulnerabilities with associated Metasploit modules.",
+        "keywords": ["Metasploit:"]
     }
 ]
