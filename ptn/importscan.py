@@ -87,9 +87,13 @@ class Import():
             proto = item.attrib['protocol']
 
             note = '--{0}--\n\n'.format(item.attrib['pluginID'])
+            name = item.find('pluginName')
             description = item.find('description')
             output = item.find('plugin_output')
             metasploit = item.find('metasploit_name')
+
+            if name is not None:
+                note += 'Name: {0}\n'.format(name.text)
 
             if description is not None:
                 note += 'Description:\n{0}'.format(description.text.strip('\n'))
@@ -98,7 +102,7 @@ class Import():
                 note += 'Output:\n{0}'.format(output.text.strip('\n'))
 
             if metasploit is not None:
-                note += 'Metasploit: {0}\n'.format(metasploit.text)
+                note += '\n\nMetasploit: {0}\n'.format(metasploit.text)
 
             if self.db.create_item(ip, port, proto, note) is False:
                 self.log.error('Unable to create new Nessus item in database.')
