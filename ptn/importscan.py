@@ -93,16 +93,16 @@ class Import():
             metasploit = item.find('metasploit_name')
 
             if name is not None:
-                note += 'Name: {0}\n'.format(name.text)
+                note += 'Name: {0}\n\n'.format(name.text)
 
             if description is not None:
-                note += 'Description:\n{0}'.format(description.text.strip('\n'))
+                note += 'Description:\n{0}\n\n'.format(description.text.strip('\n'))
 
             if output is not None:
-                note += 'Output:\n{0}'.format(output.text.strip('\n'))
+                note += 'Output:\n{0}\n\n'.format(output.text.strip('\n'))
 
             if metasploit is not None:
-                note += '\n\nMetasploit: {0}\n'.format(metasploit.text)
+                note += 'Metasploit: {0}\n'.format(metasploit.text)
 
             if self.db.create_item(ip, port, proto, note) is False:
                 self.log.error('Unable to create new Nessus item in database.')
