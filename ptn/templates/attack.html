@@ -12,7 +12,11 @@
 <h3>Hosts</h3>
 <ul class="column4">
 {% for item in items %}
-    <li><a href="/item/{{ item[0] }}">{{ item[1] }}</a></li>
+    {% if item[0] == '' %}
+        <li>{{ item[1] }}</li>
+    {% else %}
+        <li><a href="/item/{{ item[0] }}">{{ item[1] }}</a></li>
+    {% endif %}
 {% endfor %}
 </ul>
 
