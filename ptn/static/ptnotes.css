@@ -141,10 +141,17 @@ footer {
   width: 50%;
 }
 
+pre {
+  font-size: .9em;
+  border: 1px solid #000000;
+  background-color: #eeeeee;
+  white-space: pre-wrap;
+}
+
 textarea {
   margin: 0;
   padding: 0;
-  width: 50%;
+  width: 80%;
   height: 150px;
 }
 

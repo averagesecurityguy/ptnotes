@@ -5,7 +5,7 @@
 {% if data != [] %}
     {% for d in data %}
 	<h3>{{ d['port'] }}/{{ d['protocol'] }}</h3>
-        <pre>{{ line }}</pre>
+        <pre>{{ d['note'] }}</pre>
     {% endfor %}
 {% endif %}
 {% endblock %}
