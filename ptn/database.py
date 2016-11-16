@@ -226,6 +226,18 @@ class ScanDatabase(Database):
         else:
             return []
 
+    def get_attack_notes(self):
+        """
+        Get all attack notes.
+        """
+        self.log.debug('Getting notes for all attacks.')
+
+        stmt = "SELECT name, note FROM attacks"
+        if self.execute_sql(stmt, commit=False) is True:
+            return [(a['name'], a['note']) for a in self.cur.fetchall()]
+        else:
+            return []
+
     def update_attack_hosts(self, aid, items):
         """
         Update the attack items.
