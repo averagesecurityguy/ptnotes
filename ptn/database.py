@@ -276,9 +276,9 @@ class ScanDatabase(Database):
         else:
             self.log.debug('Getting attacks associated with port {0}.'.format(port))
 
-            stmt = "SELECT id, ip FROM items WHERE port=? AND protocol=?"
+            stmt = "SELECT DISTINCT ip FROM items WHERE port=? AND protocol=?"
             if self.execute_sql(stmt, (port, protocol)) is True:
-                return ['{0}:{1}'.format(i['id'], i['ip']) for i in self.cur.fetchall()]
+                return ['{0}:{1}'.format(i['ip'], i['ip']) for i in self.cur.fetchall()]
             else:
                 return []
 
