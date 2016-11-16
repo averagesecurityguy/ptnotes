@@ -48,6 +48,17 @@ def host(ip):
     return flask.render_template('host.html', host=ip, data=data)
 
 
+@app.route('/item/<item_id>')
+@project_required
+def item(item_id):
+    """
+    Get all the information about an item.
+    """
+    db = database.ScanDatabase(project_file)
+    item = db.get_item(item_id)
+
+    return flask.render_template('item.html', item=item)
+
 @app.route('/attack/<aid>', methods=['GET', 'POST'])
 @project_required
 def get_attack(aid):
@@ -61,9 +72,9 @@ def get_attack(aid):
         db.update_attack_note(aid, note)
 
     attack = db.get_attack(aid)
-    hosts = attack['hosts'].split(',')
+    items = [i.split(':') for i in attack['items'].split(',')]
 
-    return flask.render_template('attack.html', attack=attack, hosts=hosts)
+    return flask.render_template('attack.html', attack=attack, items=items)
 
 
 @app.route('/import/<pid>', methods=['POST'])

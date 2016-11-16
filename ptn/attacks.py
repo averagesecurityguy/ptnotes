@@ -36,7 +36,7 @@ class Attack():
 
         except (IOError, ValueError) as e:
             self.log.critical('Could not load attack file: {0}'.format(e))
-        
+
         return attacks
 
     def find_attacks(self):
@@ -46,29 +46,27 @@ class Attack():
         """
         for a in self.attacks:
             self.log.info('Finding attacks for {0}.'.format(a['name']))
-            hosts = self.get_hosts(a)
+            items = self.get_items(a)
 
-            if hosts != []:
+            if items != []:
                 # If the attack does not exist, create it. If it does exist then
                 # add hosts to it.
                 attack = self.db.get_attack_by_name(a['name'])
                 if attack is None:
-                    self.db.create_attack(a['name'], a['description'], hosts)
+                    self.db.create_attack(a['name'], a['description'], items)
                 else:
-                    self.db.update_attack_hosts(attack['id'], hosts)
+                    self.db.update_attack_hosts(attack['id'], items)
 
-    def get_hosts(self, attack):
+    def get_items(self, attack):
         """
-        Get all hosts matching the attack data.
+        Get all items matching the attack data.
         """
-        self.log.debug('Getting hosts for {0}.'.format(attack['name']))
-        hosts = []
+        self.log.debug('Getting items for {0}.'.format(attack['name']))
+        items = []
 
-        hosts.extend(self.db.get_hosts_by_port(attack.get('port'), attack.get('protocol')))
-        hosts.extend(self.db.get_hosts_by_keywords(attack.get('keywords')))
+        items.extend(self.db.get_items_by_port(attack.get('port'), attack.get('protocol')))
+        items.extend(self.db.get_items_by_keywords(attack.get('keywords')))
 
-        self.log.debug('Found {0} total hosts.'.format(len(hosts)))
-        hosts = list(set(hosts))
-        self.log.debug('Found {0} unique hosts.'.format(len(hosts)))
+        self.log.debug('Found {0} total items.'.format(len(items)))
 
-        return hosts
+        return items

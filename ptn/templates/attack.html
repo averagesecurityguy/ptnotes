@@ -11,8 +11,8 @@
 
 <h3>Hosts</h3>
 <ul class="column4">
-{% for host in hosts %}
-	<li><a href="/host/{{ host }}">{{ host }}</a></li>
+{% for item in items %}
+    <li><a href="/item/{{ item[0] }}">{{ item[1] }}</a></li>
 {% endfor %}
 </ul>
 

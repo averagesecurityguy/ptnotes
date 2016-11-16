@@ -104,7 +104,7 @@ class ScanDatabase(Database):
             id integer primary key autoincrement,
             name text,
             description text,
-            hosts,
+            items,
             note text
         )
         '''
@@ -132,6 +132,18 @@ class ScanDatabase(Database):
 
         stmt = "INSERT INTO items (ip, port, protocol, note) VALUES(?,?,?,?)"
         return self.execute_sql(stmt, (ip, port, protocol, note))
+
+    def get_item(self, item_id):
+        """
+        Get all items associated with an item_id.
+        """
+        self.log.debug('Getting information for item {0}.'.format(item_id))
+        stmt = "SELECT * FROM items WHERE id=?"
+
+        if self.execute_sql(stmt, (item_id,)) is True:
+            return self.cur.fetchone()
+        else:
+            return {}
 
     def get_host(self, ip):
         """
@@ -169,14 +181,14 @@ class ScanDatabase(Database):
         else:
             return []
 
-    def create_attack(self, name, description, hosts):
+    def create_attack(self, name, description, items):
         """
         Create a new attack in the database.
         """
         self.log.debug('Creating new attack for {0}.'.format(name))
 
-        stmt = "INSERT INTO attacks (name, description, hosts, note) VALUES(?,?,?,?)"
-        return self.execute_sql(stmt, (name, description, ','.join(hosts), ''))
+        stmt = "INSERT INTO attacks (name, description, items, note) VALUES(?,?,?,?)"
+        return self.execute_sql(stmt, (name, description, ','.join(items), ''))
 
     def get_attack_by_name(self, name):
         """
@@ -214,14 +226,14 @@ class ScanDatabase(Database):
         else:
             return []
 
-    def update_attack_hosts(self, aid, hosts):
+    def update_attack_hosts(self, aid, items):
         """
-        Update the attack hosts.
+        Update the attack items.
         """
-        self.log.debug('Updating hosts for attack {0}.'.format(aid))
+        self.log.debug('Updating items for attack {0}.'.format(aid))
 
-        stmt = "UPDATE attacks SET hosts=? WHERE id=?"
-        return self.execute_sql(stmt, (','.join(hosts), aid))
+        stmt = "UPDATE attacks SET items=? WHERE id=?"
+        return self.execute_sql(stmt, (','.join(items), aid))
 
     def update_attack_note(self, aid, note):
         """
@@ -243,7 +255,7 @@ class ScanDatabase(Database):
 
         return 'Hosts: {0}  Attacks {1}'.format(hosts, attacks)
 
-    def get_hosts_by_port(self, port, protocol):
+    def get_items_by_port(self, port, protocol):
         """
         Return a list of hosts with the specified port and protocol.
         """
@@ -252,29 +264,27 @@ class ScanDatabase(Database):
         else:
             self.log.debug('Getting attacks associated with port {0}.'.format(port))
 
-            stmt = "SELECT distinct ip FROM items WHERE port=? AND protocol=?"
+            stmt = "SELECT id, ip FROM items WHERE port=? AND protocol=?"
             if self.execute_sql(stmt, (port, protocol)) is True:
-                return [h['ip'] for h in self.cur.fetchall()]
+                return ['{0}:{1}'.format(i['id'], i['ip']) for i in self.cur.fetchall()]
             else:
                 return []
 
-    def get_hosts_by_keywords(self, keywords):
+    def get_items_by_keywords(self, keywords):
         """
-        Return a list of hosts with the specified protocol.
+        Return a list of items with the specified keywords.
         """
         if keywords is None:
             return []
         else:
-            self.log.debug('Getting attacks associated with keywords {0}.'.format(','.join(keywords)))
+            self.log.debug('Getting items associated with keywords {0}.'.format(','.join(keywords)))
 
-            stmt = "SELECT distinct ip FROM items WHERE "
+            stmt = "SELECT id, ip FROM items WHERE "
             stmt += ' OR '.join(["note LIKE ?" for i in xrange(len(keywords))])
             kw_strs = tuple(['%{0}%'.format(kw) for kw in keywords])
 
             if self.execute_sql(stmt, kw_strs) is True:
-                hosts = [h['ip'] for h in self.cur.fetchall()]
-                self.log.debug(hosts)
-                return hosts
+                return ['{0}:{1}'.format(i['id'], i['ip']) for i in self.cur.fetchall()]
             else:
                 return []
 

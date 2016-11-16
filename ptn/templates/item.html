@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block data %}
+{% if item != {} %}
+    <h2>{{ item['ip'] }} ({{ item['port'] }}/{{ item['protocol'] }})</h2>
+
+    <p>
+        {% for line in item['note'].split('\n') %}
+            {{ line }}<br />
+        {% endfor %}
+    </p>
+{% endif %}
+{% endblock %}
