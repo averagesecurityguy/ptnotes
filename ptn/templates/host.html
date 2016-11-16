@@ -3,21 +3,9 @@
 <h2>{{ host }}</h2>
 
 {% if data != [] %}
-	<table>
-		<tr>
-			<th>Port/Protocol</th>
-			<th>Note</th>
-		</tr>
-		{% for d in data %}
-			<tr>
-				<td>{{ d['port'] }}/{{ d['protocol'] }}</td>
-				<td>
-					{% for line in d['note'].split('\n') %}
-						{{ line }}<br />
-					{% endfor %}
-				</td>
-			</tr>
-		{% endfor %}
-	</table>
+    {% for d in data %}
+	<h3>{{ d['port'] }}/{{ d['protocol'] }}</h3>
+        <pre>{{ line }}</pre>
+    {% endfor %}
 {% endif %}
 {% endblock %}
