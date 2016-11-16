@@ -164,10 +164,9 @@ class Import():
             self.log.debug('Processing host script {0}.'.format(text))
 
             # Create new item based on each script entry.
-            for script in scripts:
-                note = self.note_from_nmap_script(script)
-                if self.db.create_item(ip, 0, 'tcp', note) is False:
-                    self.log.error('Unable to create new Nmap item in database.')
+            note = self.note_from_nmap_script(script)
+            if self.db.create_item(ip, 0, 'tcp', note) is False:
+                self.log.error('Unable to create new Nmap item in database.')
 
     def note_from_nmap_service(self, service):
         """
@@ -201,36 +200,46 @@ class Import():
         # Get output from attribute or build it from elem tags.
         if script.attrib.get('output') is not None:
             note += 'Output:{0}\n\n'.format(script.attrib.get('output', ''))
-        else:
-            output = ''
-            for elem in script.findall('elem'):
-                key = elem.attrib.get('key')
-                val = elem.text
-
-                if key is not None:
-                    output += '{0}: '.format(key.capitalize())
-
-                output += '{0}\n'.format(val)
-
-            if output != '':
-                note += 'Output:\n{0}\n\n'.format(details)
 
         # Get Details
         details = ''
         for table in script.findall('table'):
-            tn = table.attrib.get('key')
-            for elem in table.findall('elem'):
-                key = elem.attrib.get('key')
-                val = elem.text
+           details += self.process_nmap_table(table)
 
-                if tn is not None:
-                    details += '{0}: '.format(tn.capitalize())
-                if key is not None:
-                    details += '{0}: '.format(key.capitalize())
+        for elem in script.findall('elem'):
+            key = elem.attrib.get('key')
+            val = elem.text
 
-                details += '{0}\n'.format(val)
+            details += '  '
+            if key is not None:
+                details += '{0}: '.format(key.capitalize())
+
+            details += '{0}\n'.format(val)
 
         if details != '':
             note += 'Details:\n{0}'.format(details)
 
         return note
+
+    def process_nmap_table(self, table, count=1):
+        sp = ' ' * (2 * count)
+        str = ''
+
+        tn = table.attrib.get('key')
+        if tn is not None:
+            str += '{0}{1}: \n'.format(sp, tn.capitalize())
+
+        for elem in table.findall('elem'):
+            key = elem.attrib.get('key')
+            val = elem.text
+
+            str += '  {0}'.format(sp)
+            if key is not None:
+                str += '{0}: '.format(key.capitalize())
+
+            str += '{0}\n'.format(val)
+
+        for t in table.findall('table'):
+            str += self.process_nmap_table(t, count + 1)
+
+        return str
