@@ -45,6 +45,9 @@ def host(ip):
     db = database.ScanDatabase(project_file)
     data = db.get_host(ip)
 
+    if data is None:
+        flask.abort(404)
+
     return flask.render_template('host.html', host=ip, data=data)
 
 
@@ -56,6 +59,9 @@ def item(item_id):
     """
     db = database.ScanDatabase(project_file)
     item = db.get_item(item_id)
+
+    if item is None:
+        flask.abort(404)
 
     return flask.render_template('item.html', item=item)
 
@@ -72,6 +78,10 @@ def get_attack(aid):
         db.update_attack_note(aid, note)
 
     attack = db.get_attack(aid)
+
+    if attack is None:
+        flask.abort(404)
+
     items = [i.split(':') for i in attack['items'].split(',')]
 
     return flask.render_template('attack.html', attack=attack, items=items)
@@ -126,6 +136,10 @@ def get_project(pid):
     """
     pdb = database.ProjectDatabase()
     project = pdb.get_project(pid)
+
+    if project is None:
+        flask.abort(404)
+
     ports = {}
 
     # Set the project file globally
@@ -157,3 +171,13 @@ def delete_project(pid):
     project = pdb.delete_project(pid)
 
     return flask.redirect(flask.url_for('projects'))
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return flask.render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def inernal_error(e):
+    return flask.render_template('500.html'), 500
