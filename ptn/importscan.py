@@ -198,8 +198,22 @@ class Import():
         """
         note = '--{0}--\n\n'.format(script.attrib.get('id', ''))
 
+        # Get output from attribute or build it from elem tags.
         if script.attrib.get('output') is not None:
-            note += 'Output: {0}\n'.format(script.attrib.get('output', ''))
+            note += 'Output:{0}\n\n'.format(script.attrib.get('output', ''))
+        else:
+            output = ''
+            for elem in script.findall('elem'):
+                key = elem.attrib.get('key')
+                val = elem.text
+
+                if key is not None:
+                    output += '{0}: '.format(key.capitalize())
+
+                output += '{0}\n'.format(val)
+
+            if output != '':
+                note += 'Output:\n{0}\n\n'.format(details)
 
         # Get Details
         details = ''
@@ -215,15 +229,6 @@ class Import():
                     details += '{0}: '.format(key.capitalize())
 
                 details += '{0}\n'.format(val)
-
-        for elem in script.findall('elem'):
-            key = elem.attrib.get('key')
-            val = elem.text
-
-            if key is not None:
-                details += '{0}: '.format(key.capitalize())
-
-            details += '{0}\n'.format(val)
 
         if details != '':
             note += 'Details:\n{0}'.format(details)
