@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block data %}
+{% for note in notes %}
+    <h3>{{ note[0] }}</h3>
+
+    <pre>{{ note[1] }}</pre>
+{% endfor %}
+{% endblock %}
