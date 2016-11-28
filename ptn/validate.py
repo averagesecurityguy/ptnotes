@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import re
 
+re_hash = re.compile('^[0-9a-f]{64}$')
 
 class Validate():
-    
+
     def __init__(self):
         self.log = logging.getLogger('VALID')
         self.protocols = ['tcp', 'udp', 'icmp']
@@ -33,7 +35,7 @@ class Validate():
         self.log.debug("Validating port {0}.".format(port))
         try:
             assert (port >= self.min_port) and (port <= self.max_port)
-    
+
         except (TypeError, AssertionError):
             self.log.error('Port must be an integer from 0 to 65535')
             raise AssertionError('Invalid port.')
@@ -46,3 +48,13 @@ class Validate():
         except AssertionError:
             self.log.error('Protocol must be in {0}.'.format(', '.join(protocols)))
             raise AssertionError('Invalid protocol.')
+
+    def hash(self, hash):
+        self.log.debug('Validating hash {0}.'.format(hash))
+        try:
+            m = re_hash.search(hash.lower())
+            assert m is not None
+
+        except AssertionError:
+            self.log.error('Hash must be a valid SHA256 hex value.')
+            raise AssertionError('Invalid hash.') 
