@@ -1,5 +1,6 @@
 import xml.etree.ElementTree
 import logging
+import hashlib
 
 import database
 import errors
@@ -104,8 +105,7 @@ class Import():
             if metasploit is not None:
                 note += 'Metasploit: {0}\n'.format(metasploit.text)
 
-            if self.db.create_item(ip, port, proto, note) is False:
-                self.log.error('Unable to create new Nessus item in database.')
+            self.create_item(ip, port, proto, note)
 
     def import_nmap(self, scan_data):
         """
@@ -146,14 +146,12 @@ class Import():
 
             # Create new item based on the service entry.
             note = self.note_from_nmap_service(nmap_port.find('service'))
-            if self.db.create_item(ip, port, proto, note) is False:
-                self.log.error('Unable to create new Nmap item in database.')
+            self.create_item(ip, port, proto, note)
 
             # Create new item based on each script entry.
             for script in nmap_port.findall('script'):
                 note = self.note_from_nmap_script(script)
-                if self.db.create_item(ip, port, proto, note) is False:
-                    self.log.error('Unable to create new Nmap item in database.')
+                self.create_item(ip, port, proto, note)
 
     def process_nmap_hostscripts(self, ip, scripts):
         """
@@ -165,8 +163,7 @@ class Import():
 
             # Create new item based on each script entry.
             note = self.note_from_nmap_script(script)
-            if self.db.create_item(ip, 0, 'tcp', note) is False:
-                self.log.error('Unable to create new Nmap item in database.')
+            self.create_item(ip, 0, 'tcp', note)
 
     def note_from_nmap_service(self, service):
         """
@@ -222,6 +219,9 @@ class Import():
         return note
 
     def process_nmap_table(self, table, count=1):
+        """
+        Recursively process an Nmap table.
+        """
         sp = ' ' * (2 * count)
         str = ''
 
@@ -243,3 +243,17 @@ class Import():
             str += self.process_nmap_table(t, count + 1)
 
         return str
+
+    def create_item(self, ip, port, proto, note):
+        """
+        Only add new item to database if it does not exist. Use hash to
+        determine if item is a duplicate.
+        """
+        h = hashlib.sha256(''.join([ip, str(port), proto, note])).hexdigest()
+
+        if self.db.get_items_by_hash(h) == []:
+            if self.db.create_item(ip, port, proto, note, h) is False:
+                self.log.error('Unable to create new item in database.')
+        else:
+            self.log.info('Item already exists in database.')
+
