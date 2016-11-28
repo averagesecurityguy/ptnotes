@@ -291,7 +291,7 @@ class ScanDatabase(Database):
         self.log.debug('Getting items associated with hash {0}.'.format(hash))
 
         stmt = "SELECT ip FROM items WHERE hash=?"
-        if self.execute_sql(stmt, (hash)) is True:
+        if self.execute_sql(stmt, (hash,)) is True:
             return [i['ip'] for i in self.cur.fetchall()]
         else:
             return []
