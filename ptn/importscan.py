@@ -151,7 +151,7 @@ class Import():
             # Create new item based on each script entry.
             for script in nmap_port.findall('script'):
                 note = self.note_from_nmap_script(script)
-                self.create_item(ip, port, proto, note):
+                self.create_item(ip, port, proto, note)
 
     def process_nmap_hostscripts(self, ip, scripts):
         """
@@ -244,15 +244,16 @@ class Import():
 
         return str
 
-    def create_item(host, port, proto, note):
+    def create_item(self, ip, port, proto, note):
         """
         Only add new item to database if it does not exist. Use hash to
         determine if item is a duplicate.
         """
         h = hashlib.sha256(''.join([ip, str(port), proto, note])).hexdigest()
 
-        if self.db.find_items_by_hash(h) == []:
+        if self.db.get_items_by_hash(h) == []:
             if self.db.create_item(ip, port, proto, note, h) is False:
                 self.log.error('Unable to create new item in database.')
         else:
             self.log.info('Item already exists in database.')
+
