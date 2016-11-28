@@ -94,7 +94,8 @@ class ScanDatabase(Database):
             ip text,
             port integer,
             protocol text,
-            note text
+            note text,
+            hash text
         )
         '''
         ires = self.execute_sql(items)
@@ -116,7 +117,7 @@ class ScanDatabase(Database):
 
         return True
 
-    def create_item(self, ip, port, protocol, note):
+    def create_item(self, ip, port, protocol, note, hash):
         """
         Add new item.
         """
@@ -125,13 +126,14 @@ class ScanDatabase(Database):
             self.valid.ip(ip)
             self.valid.port(port)
             self.valid.protocol(protocol)
+            self.valid.hash(hash)
 
         except AssertionError as e:
             self.log.error(e)
             return False
 
-        stmt = "INSERT INTO items (ip, port, protocol, note) VALUES(?,?,?,?)"
-        return self.execute_sql(stmt, (ip, port, protocol, note))
+        stmt = "INSERT INTO items (ip, port, protocol, note, hash) VALUES(?, ?,?,?,?)"
+        return self.execute_sql(stmt, (ip, port, protocol, note, hash))
 
     def get_item(self, item_id):
         """
@@ -281,6 +283,18 @@ class ScanDatabase(Database):
                 return ['{0}:{1}'.format('', i['ip']) for i in self.cur.fetchall()]
             else:
                 return []
+
+    def get_items_by_hash(self, hash):
+        """
+        Return a list of hosts with the specified hash.
+        """
+        self.log.debug('Getting items associated with hash {0}.'.format(hash))
+
+        stmt = "SELECT ip FROM items WHERE hash=?"
+        if self.execute_sql(stmt, (hash)) is True:
+            return [i['ip'] for i in self.cur.fetchall()]
+        else:
+            return []
 
     def get_items_by_keywords(self, keywords):
         """
