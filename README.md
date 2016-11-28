@@ -7,8 +7,8 @@ Simple tool for taking notes in a pentest.
 or
 
 ```
-wget https://github.com/averagesecurityguy/ptnotes/blob/master/releases/ptnotes-0.2.tar.gz
-tar -xvf ptnotes-0.2.tar.gz
+wget https://github.com/averagesecurityguy/ptnotes/archive/v<version_number>.zip
+gunzip v<version_number>.zip
 ```
 
 ## Usage
