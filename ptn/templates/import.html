@@ -1,10 +1,8 @@
 {% extends "base.html" %}
 {% block data %}
 <h3>Import Scan Data</h3>
-<form action="/import/{{ pid }}" method="post" enctype="multipart/form-data" multiple>
-  <input type="file" name="scans[]" multiple placeholder="Enter a Nessus or Nma$
+<form action="/import/{{ pid }}" method="post" enctype="multipart/form-data">
+  <input type="file" name="scans[]" multiple placeholder="Enter Nessus or Nmap files."><br />
   <input type="submit" value="Import">
 </form>
-
-{% endif %}
 {% endblock %}

@@ -88,14 +88,13 @@ def get_attack(aid):
 
 
 @app.route('/import/<pid>', methods=['GET', 'POST'])
-@project_required
 def import_scan(pid):
     """
     Import scan data into the database associated with the pid.
     """
 
-    if method == 'GET':
-        flask.render_template('import.html', pid)
+    if flask.request.method == 'GET':
+        return flask.render_template('import.html', pid=pid)
 
     else:
         # Get our project
