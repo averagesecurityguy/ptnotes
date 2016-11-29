@@ -85,7 +85,7 @@
     {
         "name": "Unsupported Software",
         "description": "The listed software is no longer supported by the manufacturer.",
-        "keywords": ["Unsupported"]
+        "keywords": ["No longer supported"]
     },
     {
         "name": "IKE Aggressive Mode",
