@@ -6,6 +6,12 @@
         "protocol": "tcp"
     },
     {
+        "name": "SMB Brute-force.",
+        "description": "Attempt to brute-force the local administrator account on these SMB servers.",
+        "port": 445,
+        "protocol": "tcp"
+    },
+    {
         "name": "Telnet Servers",
         "description": "Many devices have common telnet username and password combinations.",
         "port": 23,
