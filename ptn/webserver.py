@@ -87,34 +87,47 @@ def get_attack(aid):
     return flask.render_template('attack.html', attack=attack, items=items)
 
 
-@app.route('/import/<pid>', methods=['POST'])
+@app.route('/import/<pid>', methods=['GET', 'POST'])
 def import_scan(pid):
     """
     Import scan data into the database associated with the pid.
     """
 
+    if flask.request.method == 'GET':
+        return flask.render_template('import.html', pid=pid)
+
+    else:
+        # Get our project
+        pdb = database.ProjectDatabase()
+        project = pdb.get_project(pid)
+
+        if project is None:
+            flask.abort(404)
+
+        i = importscan.Import(project['dbfile'])
+        scans = flask.request.files.getlist("scans[]")
+
+        for scan in scans:
+            i.import_scan(scan.read())
+
+        a = attacks.Attack(project['dbfile'])
+        a.find_attacks()
+
+        return flask.redirect(flask.url_for('get_project', pid=pid))
+
+@app.route('/notes/<pid>')
+def notes(pid):
+    """
+    Display all attack notes.
+    """
     # Get our project
     pdb = database.ProjectDatabase()
     project = pdb.get_project(pid)
 
-    i = importscan.Import(project['dbfile'])
-    scans = flask.request.files.getlist("scans[]")
+    if project is None:
+        flask.abort(404)
 
-    for scan in scans:
-        i.import_scan(scan.read())
-
-    a = attacks.Attack(project['dbfile'])
-    a.find_attacks()
-
-    return flask.redirect(flask.url_for('get_project', pid=pid))
-
-@app.route('/notes')
-@project_required
-def notes():
-    """
-    Display all attack notes.
-    """
-    db = database.ScanDatabase(project_file)
+    db = database.ScanDatabase(project['dbfile'])
     notes = db.get_attack_notes()
 
     return flask.render_template('notes.html', notes=notes)
