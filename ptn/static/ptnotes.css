@@ -38,8 +38,8 @@ p {
 
 a {
   color: #000;
-  text-decoration: none;
-  border-bottom: 1px solid #000;
+  /*text-decoration: none;
+  border-bottom: 1px solid #000;*/
   -webkit-transition: opacity 0.2s linear; 
   -moz-transition: opacity 0.2s linear; 
   -o-transition: opacity 0.2s linear; 
@@ -150,9 +150,11 @@ pre {
 
 textarea {
   margin: 0;
-  padding: 0;
-  width: 80%;
-  height: 150px;
+  padding: 0 1em;
+  width: 100%;
+  height: 200px;
+  font-size: 1.1em;
+  font-family: "Courier New", Courier, monospace;
 }
 
 img {
