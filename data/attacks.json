@@ -9,12 +9,13 @@
         "name": "Telnet Servers",
         "description": "Many devices have common telnet username and password combinations.",
         "port": 23,
-        "protocol": "tcp"
+        "protocol": "tcp",
+        "keywords": ["--42263--"]
     },
     {
         "name": "SSLv2/SSLv3",
         "description": "SSL version 2 and version 3 should be disabled in most production environments.",
-        "keywords": ["--sslv2--", "--sslv3--", "--66334--", "--20007--", "--56984--"]
+        "keywords": ["--sslv2--", "--sslv3--", "--20007--"]
     },
     {
         "name": "POODLE",
@@ -80,5 +81,17 @@
         "name": "Metasploit",
         "description": "These devices have vulnerabilities with associated Metasploit modules.",
         "keywords": ["Metasploit:"]
+    },
+    {
+        "name": "Unsupported Software",
+        "description": "The listed software is no longer supported by the manufacturer.",
+        "keywords": ["Unsupported"]
+    },
+    {
+        "name": "IKE Aggressive Mode",
+        "description": "These servers allow IKE connections, they should be checked for aggressive mode support.",
+        "port": 500,
+        "protocol": "udp",
+        "keywords": ["--62694--"]
     }
 ]
