@@ -101,6 +101,9 @@ def import_scan(pid):
         pdb = database.ProjectDatabase()
         project = pdb.get_project(pid)
 
+        if project is None:
+            flask.abort(404)
+
         i = importscan.Import(project['dbfile'])
         scans = flask.request.files.getlist("scans[]")
 
@@ -112,13 +115,19 @@ def import_scan(pid):
 
         return flask.redirect(flask.url_for('get_project', pid=pid))
 
-@app.route('/notes')
-@project_required
-def notes():
+@app.route('/notes/<pid>')
+def notes(pid):
     """
     Display all attack notes.
     """
-    db = database.ScanDatabase(project_file)
+    # Get our project
+    pdb = database.ProjectDatabase()
+    project = pdb.get_project(pid)
+
+    if project is None:
+        flask.abort(404)
+
+    db = database.ScanDatabase(project['db_file'])
     notes = db.get_attack_notes()
 
     return flask.render_template('notes.html', notes=notes)
