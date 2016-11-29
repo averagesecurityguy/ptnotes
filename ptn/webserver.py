@@ -127,7 +127,7 @@ def notes(pid):
     if project is None:
         flask.abort(404)
 
-    db = database.ScanDatabase(project['db_file'])
+    db = database.ScanDatabase(project['dbfile'])
     notes = db.get_attack_notes()
 
     return flask.render_template('notes.html', notes=notes)
