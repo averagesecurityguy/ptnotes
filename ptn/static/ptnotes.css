@@ -149,7 +149,7 @@ pre {
   border: 1px solid #000000;
   background-color: #eeeeee;
   white-space: pre-wrap;
-  padding: 0 1em;
+  padding: 1em;
 }
 
 textarea {
