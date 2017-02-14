@@ -73,7 +73,9 @@ class Import():
                     ip = tag.text
 
             if (ip != ''):
-                self.log.info('Processing ip {0}.'.format(ip))
+                self.log.info('Adding host record for IP {0}.'.format(ip))
+                self.create_host(ip)
+                self.log.info('Processing IP {0}.'.format(ip))
                 self.process_nessus_items(ip, host.findall('ReportItem'))
 
     def process_nessus_items(self, ip, report_items):
@@ -120,6 +122,9 @@ class Import():
                 self.log.debug('Getting IP address for host.')
                 address = host.find('address')
                 ip = address.attrib['addr']
+
+                self.log.info('Adding host record for IP {0}.'.format(ip))
+                self.create_host(ip)
 
                 self.log.info('Processing ip {0}.'.format(ip))
                 self.process_nmap_ports(ip, host.findall('ports/port'))
@@ -257,3 +262,14 @@ class Import():
         else:
             self.log.info('Item already exists in database.')
 
+    def create_host(self, ip):
+        """
+        Only add new host to database if it does not exist.
+        """
+        if self.db.get_host_ip(ip) == []:
+            if self.db.create_host(ip) is False:
+                self.log.error('Unable to create host record in database.')
+        else:
+            self.log.info('Host already exists in database.')
+
+            

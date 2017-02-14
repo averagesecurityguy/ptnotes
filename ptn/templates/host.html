@@ -2,10 +2,17 @@
 {% block data %}
 <h2>{{ host }}</h2>
 
-{% if data != [] %}
-    {% for d in data %}
-	<h3>{{ d['port'] }}/{{ d['protocol'] }}</h3>
-        <pre>{{ d['note'] }}</pre>
+<h3>Notes</h3>
+<form method='POST' action="/host/{{ host }}">
+    <textarea name="note">{{ data['note'] }}</textarea><br />
+    <input type="submit" value="Update Notes" />
+</form>
+
+
+{% if data['items'] != [] %}
+    {% for i in data['items'] %}
+	<h3>{{ i['port'] }}/{{ i['protocol'] }}</h3>
+        <pre>{{ i['note'] }}</pre>
     {% endfor %}
 {% endif %}
 {% endblock %}

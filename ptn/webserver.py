@@ -26,6 +26,19 @@ def project_required(f):
     return decorated_function
 
 
+def get_project_db(pid):
+    """
+    Get our project database.
+    """
+    pdb = database.ProjectDatabase()
+    project = pdb.get_project(pid)
+
+    if project is None:
+        flask.abort(404)
+
+    return project
+
+
 @app.route("/")
 def index():
     return flask.render_template('index.html')
@@ -36,19 +49,36 @@ def about():
     return flask.render_template('about.html')
 
 
-@app.route('/host/<ip>')
+@app.route('/host/<ip>', methods=['GET', 'POST'])
 @project_required
 def host(ip):
     """
     Get all the information about a host.
     """
     db = database.ScanDatabase(project_file)
+
+    if flask.request.method == 'POST':
+        note = flask.request.form['note']
+        db.update_host_note(ip, note)
+
     data = db.get_host(ip)
 
     if data is None:
         flask.abort(404)
 
     return flask.render_template('host.html', host=ip, data=data)
+
+
+@app.route('/host/notes/<pid>')
+def notes(pid):
+    """
+    Display all host notes.
+    """
+    project = get_project_db(pid)
+    db = database.ScanDatabase(project['dbfile'])
+    notes = db.get_host_notes()
+
+    return flask.render_template('notes.html', notes=notes)
 
 
 @app.route('/item/<item_id>')
@@ -64,6 +94,7 @@ def item(item_id):
         flask.abort(404)
 
     return flask.render_template('item.html', item=item)
+
 
 @app.route('/attack/<aid>', methods=['GET', 'POST'])
 @project_required
@@ -92,18 +123,11 @@ def import_scan(pid):
     """
     Import scan data into the database associated with the pid.
     """
-
     if flask.request.method == 'GET':
         return flask.render_template('import.html', pid=pid)
 
     else:
-        # Get our project
-        pdb = database.ProjectDatabase()
-        project = pdb.get_project(pid)
-
-        if project is None:
-            flask.abort(404)
-
+        project = get_project_db(pid)
         i = importscan.Import(project['dbfile'])
         scans = flask.request.files.getlist("scans[]")
 
@@ -115,18 +139,13 @@ def import_scan(pid):
 
         return flask.redirect(flask.url_for('get_project', pid=pid))
 
-@app.route('/notes/<pid>')
-def notes(pid):
+
+@app.route('/attack/notes/<pid>')
+def attack_notes(pid):
     """
     Display all attack notes.
     """
-    # Get our project
-    pdb = database.ProjectDatabase()
-    project = pdb.get_project(pid)
-
-    if project is None:
-        flask.abort(404)
-
+    project = get_project_db(pid)
     db = database.ScanDatabase(project['dbfile'])
     notes = db.get_attack_notes()
 
@@ -157,12 +176,7 @@ def get_project(pid):
     """
     Get a project, including the list of hosts attacks.
     """
-    pdb = database.ProjectDatabase()
-    project = pdb.get_project(pid)
-
-    if project is None:
-        flask.abort(404)
-
+    project = get_project_db(pid)
     ports = {}
 
     # Set the project file globally
@@ -178,8 +192,8 @@ def get_project(pid):
 
         for host in hosts:
             ip = host['ip']
-            port_list = db.get_ports(ip)
-            ports[ip] = [str(p['port']) for p in port_list if p['port'] != 0]
+            data = db.get_host(host['ip'])
+            ports[ip] = [str(p) for p in data['ports'] if p != 0]
 
         return flask.render_template('project.html', pid=pid,
                                      project=project['name'], hosts=hosts,

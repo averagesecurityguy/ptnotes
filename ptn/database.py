@@ -105,13 +105,22 @@ class ScanDatabase(Database):
             id integer primary key autoincrement,
             name text,
             description text,
-            items,
+            items text,
             note text
         )
         '''
         ares = self.execute_sql(attacks)
 
-        if (ires is False) or (ares is False):
+        hosts = '''
+        CREATE TABLE IF NOT EXISTS hosts (
+            id integer primary key autoincrement,
+            ip text,
+            note text
+        )
+        '''
+        hres = self.execute_sql(hosts)
+        
+        if (ires is False) or (ares is False) or (hres is False):
             self.log.critical('Could not initialize database: {0}.'.format(self.filename))
             return False
 
@@ -132,7 +141,7 @@ class ScanDatabase(Database):
             self.log.error(e)
             return False
 
-        stmt = "INSERT INTO items (ip, port, protocol, note, hash) VALUES(?, ?,?,?,?)"
+        stmt = "INSERT INTO items (ip, port, protocol, note, hash) VALUES(?,?,?,?,?)"
         return self.execute_sql(stmt, (ip, port, protocol, note, hash))
 
     def get_item(self, item_id):
@@ -147,41 +156,81 @@ class ScanDatabase(Database):
         else:
             return {}
 
-    def get_host(self, ip):
+    def create_host(self, ip):
         """
-        Get all items associated with an IP.
+        Create a new host identified by the IP address.
         """
-        self.log.debug('Getting all items for {0}.'.format(ip))
-        stmt = "SELECT * FROM items WHERE ip=? ORDER BY port"
+        self.log.debug('Creating new host for {0}.'.format(ip))
 
-        if self.execute_sql(stmt, (ip,)) is True:
-            return self.cur.fetchall()
-        else:
-            return []
-
-    def get_ports(self, ip):
-        """
-        Get all ports associated with an IP.
-        """
-        self.log.debug('Getting all ports for {0}.'.format(ip))
-        stmt = "SELECT DISTINCT port from items WHERE ip=? ORDER BY ip"
-
-        if self.execute_sql(stmt, (ip,)) is True:
-            return self.cur.fetchall()
-        else:
-            return []
+        stmt = "INSERT INTO hosts (ip) VALUES(?)"
+        return self.execute_sql(stmt, (ip,))
 
     def get_hosts(self):
         """
         Get all hosts.
         """
         self.log.debug('Getting all hosts.')
-        stmt = "SELECT DISTINCT ip FROM items ORDER BY ip"
+        stmt = "SELECT DISTINCT ip FROM hosts ORDER BY ip"
 
         if self.execute_sql(stmt) is True:
             return self.cur.fetchall()
         else:
             return []
+
+    def get_host_ip(self, ip):
+        """
+        Return the host if it exists in the database.
+        """
+        self.log.debug('Getting host record associated with IP {0}.'.format(ip))
+
+        stmt = "SELECT ip FROM hosts WHERE ip=?"
+        if self.execute_sql(stmt, (ip,)) is True:
+            return [i['ip'] for i in self.cur.fetchall()]
+        else:
+            return []
+
+    def get_host_notes(self):
+        """
+        Get all notes for hosts.
+        """
+        self.log.debug('Getting all host notes.')
+        stmt = "SELECT ip, note from hosts ORDER BY ip"
+
+        if self.execute_sql(stmt) is True:
+            return self.cur.fetchall()
+        else:
+            return []
+
+    def update_host_note(self, ip, note):
+        """
+        Update the host note.
+        """
+        self.log.debug('Updating note for host {0}.'.format(ip))
+
+        stmt = "UPDATE hosts SET note=? WHERE ip=?"
+        return self.execute_sql(stmt, (note, ip))
+
+    def get_host(self, ip):
+        """
+        Get all information associated with an IP.
+        """
+        host = {'note': '', 'ports': [], 'items': []}
+
+        self.log.debug('Getting note for host {0}.'.format(ip))
+        stmt = "SELECT note FROM hosts WHERE ip=?"
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            host['note'] = self.cur.fetchone()['note']
+
+        self.log.debug('Getting all items for host {0}.'.format(ip))
+        stmt = "SELECT * FROM items WHERE ip=? ORDER BY port"
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            host['items'] = self.cur.fetchall()
+
+        host['ports'] = set([p['port'] for p in host['items']])
+
+        return host
 
     def create_attack(self, name, description, items):
         """
@@ -337,6 +386,7 @@ class ProjectDatabase(Database):
         CREATE TABLE IF NOT EXISTS projects (
             id integer primary key autoincrement,
             name text,
+            note text,
             dbfile text
         )
         '''
