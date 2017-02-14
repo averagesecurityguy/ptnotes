@@ -329,7 +329,7 @@ class ScanDatabase(Database):
 
             stmt = "SELECT DISTINCT ip FROM items WHERE port=? AND protocol=?"
             if self.execute_sql(stmt, (port, protocol)) is True:
-                return ['{0}:{1}'.format('', i['ip']) for i in self.cur.fetchall()]
+                return [('', i['ip']) for i in self.cur.fetchall()]
             else:
                 return []
 
@@ -359,7 +359,7 @@ class ScanDatabase(Database):
             kw_strs = tuple(['%{0}%'.format(kw) for kw in keywords])
 
             if self.execute_sql(stmt, kw_strs) is True:
-                return ['{0}:{1}'.format(i['id'], i['ip']) for i in self.cur.fetchall()]
+                return [(i['id'], i['ip']) for i in self.cur.fetchall()]
             else:
                 return []
 

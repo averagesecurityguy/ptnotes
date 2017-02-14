@@ -64,9 +64,23 @@ class Attack():
         self.log.debug('Getting items for {0}.'.format(attack['name']))
         items = []
 
-        items.extend(self.db.get_items_by_port(attack.get('port'), attack.get('protocol')))
         items.extend(self.db.get_items_by_keywords(attack.get('keywords')))
+        ips = [i[1] for i in items]
+
+        #
+        # Looking up items by keyword and by port can lead to duplicates. I
+        # prefer to use the output from the keyword lookup if it is available.
+        # If the IP returned by the port lookup is already in the keyword
+        # data, then skip it.
+        #
+        for item in self.db.get_items_by_port(attack.get('port'), attack.get('protocol')):
+            if item[1] in ips:
+                continue
+            else:
+                items.append(item)
 
         self.log.debug('Found {0} total items.'.format(len(items)))
+
+        items = ["{0}:{1}".format(i[0], i[1]) for i in items]
 
         return items
