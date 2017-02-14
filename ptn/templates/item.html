@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block data %}
+<a href="/project/{{ pid }}">Return to project page.</a>
+
 {% if item != {} %}
     <h2>{{ item['ip'] }} ({{ item['port'] }}/{{ item['protocol'] }})</h2>
 

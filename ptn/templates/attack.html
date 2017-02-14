@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% block data %}
+<a href="/project/{{ pid }}">Return to project page.</a>
 <h2>{{ attack['name'] }}</h2>
 <p>{{ attack['description'] }}</p>
 
 <h3>Notes</h3>
-<form method='POST' action="/attack/{{ attack['id'] }}">
+<form method='POST' action="/project/{{ pid }}/attack/{{ attack['id'] }}">
 	<textarea name="note">{{ attack['note'] }}</textarea><br />
 	<input type="submit" value="Update Notes" />
 </form>
@@ -15,7 +16,7 @@
     {% if item[0] == '' %}
         <li>{{ item[1] }}</li>
     {% else %}
-        <li><a href="/item/{{ item[0] }}">{{ item[1] }}</a></li>
+        <li><a href="/project/{{ pid }}/item/{{ item[0] }}">{{ item[1] }}</a></li>
     {% endif %}
 {% endfor %}
 </ul>

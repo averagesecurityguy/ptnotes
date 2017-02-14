@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% block data %}
+<a href="/project/{{ pid }}">Return to project page.</a>
+
 <h2>{{ host }}</h2>
 
 <h3>Notes</h3>
-<form method='POST' action="/host/{{ host }}">
+<form method='POST' action="/project/{{ pid }}/host/{{ host }}">
     <textarea name="note">{{ data['note'] }}</textarea><br />
     <input type="submit" value="Update Notes" />
 </form>

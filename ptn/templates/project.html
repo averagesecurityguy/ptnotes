@@ -14,7 +14,7 @@
         </tr>
     {% for a in attacks %}
         <tr>
-            <td><a href="/attack/{{ a['id'] }}">{{ a['name'] }}</a></td>
+            <td><a href="/project/{{ pid }}/attack/{{ a['id'] }}">{{ a['name'] }}</a></td>
             <td>{{ a['description'] }}</td>
         </tr>
     {% endfor %}
@@ -33,7 +33,7 @@
         </tr>
         {% for h in hosts %}
             <tr>
-                <td><a href="/host/{{ h['ip'] }}">{{ h['ip'] }}</a></td>
+                <td><a href="/project/{{ pid }}/host/{{ h['ip'] }}">{{ h['ip'] }}</a></td>
                 <td>{{ ', '.join(ports[h['ip']]) }}</td>
             </tr>
         {% endfor %}

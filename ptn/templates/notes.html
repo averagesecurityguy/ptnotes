@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block data %}
+
 {% for note in notes %}
     {% if note[1] != "" and note[1] != None %}
         <h3>{{ note[0] }}</h3>
