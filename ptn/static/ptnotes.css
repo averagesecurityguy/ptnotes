@@ -38,16 +38,18 @@ p {
 
 a {
   color: #000;
-  /*text-decoration: none;
-  border-bottom: 1px solid #000;*/
   -webkit-transition: opacity 0.2s linear; 
   -moz-transition: opacity 0.2s linear; 
   -o-transition: opacity 0.2s linear; 
-  transition: opacity 0.2s linear; 
+  transition: opacity 0.2s linear;
 }
 
 a:hover {
   opacity: .5;
+}
+
+td a {
+  padding: 0 1em;
 }
 
 ul {
@@ -74,6 +76,7 @@ nav {
 
 nav a {
   display: inline-block;
+  text-decoration: none;
   margin: 0 1em .5em 0;
   padding: 0 0 2px 0;
   color: #000;
@@ -105,7 +108,7 @@ td {
 }
 
 table, tr, td, th {
-  padding: .25em;
+  padding: .5em;
   border: 1px solid #eee;
 }
 
@@ -146,6 +149,7 @@ pre {
   border: 1px solid #000000;
   background-color: #eeeeee;
   white-space: pre-wrap;
+  padding: 0 1em;
 }
 
 textarea {
