@@ -1,5 +1,5 @@
 # PTNotes
-Simple tool for taking notes in a pentest.
+Simple tool for taking notes in a pentest. PTNotes uses data from imported Nessus and Nmap files along with the built-in attack data to build a list of hosts, open ports, and potential attack vectors. It then allows you to add notes to each host and each attack vector. You can then view all attack notes or all host notes at one time. PTNotes allows you to create a separate project for each penetration test.
 
 ## Installation
 `git clone https://github.com/averagesecurityguy/ptnotes`
