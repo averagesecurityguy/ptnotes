@@ -13,7 +13,7 @@ class Import():
         self.db = database.ScanDatabase(db_file)
 
     def import_scan(self, scan_data):
-        file_type = self.get_file_type(scan_data[:100])
+        file_type = self.get_file_type(scan_data[:300])
 
         try:
             if file_type == 'Nessus':
@@ -38,6 +38,8 @@ class Import():
         if '<NessusClientData_v2>' in header:
             return 'Nessus'
         elif '<!DOCTYPE nmaprun>' in header:
+            return 'Nmap'
+        elif '<nmaprun ' in header:
             return 'Nmap'
         else:
             return 'Unknown'
