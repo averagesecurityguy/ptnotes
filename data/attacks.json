@@ -2,20 +2,16 @@
     {
         "name": "SSH Brute-force.",
         "description": "Many devices have common SSH username and password combinations.",
-        "port": 22,
-        "protocol": "tcp"
+        "keywords": ["--ssh-hostkey--", "--10881--"]
     },
     {
         "name": "SMB Brute-force.",
         "description": "Attempt to brute-force the local administrator account on these SMB servers.",
-        "port": 445,
-        "protocol": "tcp"
+        "keywords": ["--smb-os-discovery--", "--11011--"]
     },
     {
         "name": "Telnet Servers",
         "description": "Many devices have common telnet username and password combinations.",
-        "port": 23,
-        "protocol": "tcp",
         "keywords": ["--42263--"]
     },
     {
@@ -71,7 +67,7 @@
     {
         "name": "Web Server Detection",
         "description": "Many web servers have easily exploited vulnerabilities.",
-        "keywords": ["--10107--"]
+        "keywords": ["--10107--", "--http-server-header--"]
     },
     {
         "name": "Default Credentials",
@@ -96,8 +92,6 @@
     {
         "name": "IKE Aggressive Mode",
         "description": "These servers allow IKE connections, they should be checked for aggressive mode support.",
-        "port": 500,
-        "protocol": "udp",
         "keywords": ["--62694--"]
     }
 ]

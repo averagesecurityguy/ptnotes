@@ -318,21 +318,6 @@ class ScanDatabase(Database):
 
         return 'Hosts: {0}  Attacks {1}'.format(hosts, attacks)
 
-    def get_items_by_port(self, port, protocol):
-        """
-        Return a list of hosts with the specified port and protocol.
-        """
-        if port is None:
-            return []
-        else:
-            self.log.debug('Getting attacks associated with port {0}.'.format(port))
-
-            stmt = "SELECT DISTINCT ip FROM items WHERE port=? AND protocol=?"
-            if self.execute_sql(stmt, (port, protocol)) is True:
-                return [('', i['ip']) for i in self.cur.fetchall()]
-            else:
-                return []
-
     def get_items_by_hash(self, hash):
         """
         Return a list of hosts with the specified hash.
