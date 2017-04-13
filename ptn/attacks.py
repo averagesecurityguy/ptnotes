@@ -65,10 +65,9 @@ class Attack():
         items = []
 
         items.extend(self.db.get_items_by_keywords(attack.get('keywords')))
-        ips = [i[1] for i in items]
 
         self.log.debug('Found {0} total items.'.format(len(items)))
 
-        items = ["{0}:{1}".format(i[0], i[1]) for i in items]
+        items = ["{0}:{1}:{2}".format(i[0], i[1], i[2]) for i in items]
 
         return items

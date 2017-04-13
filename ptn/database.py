@@ -339,12 +339,12 @@ class ScanDatabase(Database):
         else:
             self.log.debug('Getting items associated with keywords {0}.'.format(','.join(keywords)))
 
-            stmt = "SELECT id, ip FROM items WHERE "
+            stmt = "SELECT id, ip, port FROM items WHERE "
             stmt += ' OR '.join(["note LIKE ?" for i in xrange(len(keywords))])
             kw_strs = tuple(['%{0}%'.format(kw) for kw in keywords])
 
             if self.execute_sql(stmt, kw_strs) is True:
-                return [(i['id'], i['ip']) for i in self.cur.fetchall()]
+                return [(i['id'], i['ip'], i['port']) for i in self.cur.fetchall()]
             else:
                 return []
 

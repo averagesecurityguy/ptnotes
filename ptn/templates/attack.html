@@ -14,9 +14,9 @@
 <ul class="column4">
 {% for item in items %}
     {% if item[0] == '' %}
-        <li>{{ item[1] }}</li>
+        <li>{{ item[1] }} ({{ item[2] }})</li>
     {% else %}
-        <li><a href="/project/{{ pid }}/item/{{ item[0] }}">{{ item[1] }}</a></li>
+        <li><a href="/project/{{ pid }}/item/{{ item[0] }}">{{ item[1] }} ({{ item[2] }})</a></li>
     {% endif %}
 {% endfor %}
 </ul>
