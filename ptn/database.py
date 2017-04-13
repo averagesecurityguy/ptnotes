@@ -435,7 +435,7 @@ class ProjectDatabase(Database):
         Delete the project and the associated database file.
         """
         self.log.debug('Deleting project {0}.'.format(pid))
-        name, db_file = self.get_project(pid)
+        name, db_file, _ = self.get_project(pid)
         if name is None:
             self.log.error('Could not find project {0}.'.format(pid))
 
