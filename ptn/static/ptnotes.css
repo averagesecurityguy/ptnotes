@@ -98,6 +98,10 @@ section {
   min-height: 300px;
 }
 
+.note {
+  min-height: 0px;
+}
+
 table {
   border-collapse: collapse;
   border-spacing: .25em;

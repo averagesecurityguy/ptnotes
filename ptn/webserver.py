@@ -55,7 +55,18 @@ def host(pid, ip):
     if data is None:
         flask.abort(404)
 
-    return flask.render_template('host.html', pid=pid, host=ip, data=data)
+    notes = {}
+    for item in data['items']:
+        key = "{0}/{1}".format(item['port'], item['protocol'])
+        if notes.get(key) is None:
+            notes[key] = []
+            notes[key].append(item['note'])
+        else:
+            notes[key].append(item['note'])
+
+    keys = sorted(notes.keys(), key=lambda x: int(x.split('/')[0]))
+
+    return flask.render_template('host.html', pid=pid, host=ip, data=notes, keys=keys)
 
 
 @app.route('/project/<pid>/host/notes')

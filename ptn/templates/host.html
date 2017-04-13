@@ -1,5 +1,16 @@
 {% extends "base.html" %}
 {% block data %}
+<script type="text/javascript">
+    function toggle(id) 
+    {
+        var e = document.getElementById(id);
+        if ( e.style.display == 'block' )
+            e.style.display = 'none';
+        else
+            e.style.display = 'block';
+    }
+</script>
+
 <a href="/project/{{ pid }}">Return to project page.</a>
 
 <h2>{{ host }}</h2>
@@ -11,10 +22,15 @@
 </form>
 
 
-{% if data['items'] != [] %}
-    {% for i in data['items'] %}
-	<h3>{{ i['port'] }}/{{ i['protocol'] }}</h3>
-        <pre>{{ i['note'] }}</pre>
+{% if data != {} %}
+    <p>Click on the heading to see the associated data.</p>
+    {% for k in keys %}
+	<h3 onclick="toggle('{{ k }}')">{{ k }}</h3>
+        <section class="note" id="{{ k }}" style="display: none;">
+        {% for n in data[k] %}
+            <pre>{{ n }}</pre>
+        {% endfor %}
+        </section>
     {% endfor %}
 {% endif %}
 {% endblock %}
