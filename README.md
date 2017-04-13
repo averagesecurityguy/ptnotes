@@ -7,8 +7,8 @@ Simple tool for taking notes in a pentest. PTNotes uses data from imported Nessu
 or
 
 ```
-wget https://github.com/averagesecurityguy/ptnotes/archive/v<version_number>.zip
-gunzip v<version_number>.zip
+wget https://github.com/averagesecurityguy/ptnotes/archive/<version>.zip
+gunzip <version>.zip
 ```
 
 ## Usage
