@@ -190,8 +190,28 @@ def get_project(pid):
         ports[ip] = [str(p) for p in data['ports'] if p != 0]
 
     return flask.render_template('project.html', pid=pid,
-                                 project=project['name'], hosts=hosts,
-                                 ports=ports, attacks=attacks)
+                                 note=project['note'], name=project['name'],
+                                 hosts=hosts, ports=ports, attacks=attacks)
+
+
+@app.route('/project/<pid>/notes', methods=['GET', 'POST'])
+def project_notes(pid):
+    """
+    Display all project notes.
+    """
+    pdb = database.ProjectDatabase()
+    project = get_project_db(pid)
+
+    if flask.request.method == 'POST':
+        note = flask.request.form['note']
+        pdb.update_project_note(pid, note)
+
+        return flask.redirect(flask.url_for('get_project', pid=pid))
+    else:
+        note = project['note']
+        name = project['name']
+
+        return flask.render_template('project_notes.html', pid=pid, name=name, note=note)
 
 
 @app.route('/project/<pid>/delete')

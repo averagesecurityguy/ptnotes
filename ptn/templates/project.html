@@ -1,11 +1,19 @@
 {% extends "base.html" %}
 {% block data %}
 
-<h2>{{ project }}</h2>
-<p><a href="/project/{{ pid }}/attack/notes">Attack Notes</a> | 
+<h2>{{ name }}</h2>
+<p>
+<a href="/project/{{ pid }}/notes">Project Notes</a> | 
+<a href="/project/{{ pid }}/attack/notes">Attack Notes</a> | 
 <a href="/project/{{ pid }}/host/notes">Host Notes</a> | 
-<a href="/project/{{ pid }}/import">Import Data</a></p>
+<a href="/project/{{ pid }}/import">Import Data</a>
+</p>
 
+<h3>Notes</h3>
+<form method='POST' action="/project/{{ pid }}/notes">
+    <textarea name="note">{{ note }}</textarea><br />
+    <input type="submit" value="Update Notes" />
+</form>
 
 <h3>Possible Attacks</h3>
 {% if not attacks %}

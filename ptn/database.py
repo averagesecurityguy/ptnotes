@@ -403,7 +403,7 @@ class ProjectDatabase(Database):
         Get the project name and database file associated with the pid.
         """
         self.log.debug('Getting project for {0}.'.format(pid))
-        stmt = "SELECT name, dbfile FROM projects WHERE id=?"
+        stmt = "SELECT name, dbfile, note FROM projects WHERE id=?"
 
         if self.execute_sql(stmt, (pid,)) is True:
             return self.cur.fetchone()
@@ -422,13 +422,13 @@ class ProjectDatabase(Database):
         else:
             return []
 
-    def update_project(self, pid, name):
+    def update_project_note(self, pid, note):
         """
-        Update the project name.
+        Update the project notes.
         """
         self.log.debug('Updating project {0}.'.format(pid))
-        stmt = "UPDATE projects SET name=? WHERE id=?"
-        return self.execute_sql(stmt, (name, pid))
+        stmt = "UPDATE projects SET note=? WHERE id=?"
+        return self.execute_sql(stmt, (note, pid))
 
     def delete_project(self, pid):
         """
