@@ -2,6 +2,10 @@
 {% block data %}
 
 <h2>{{ project }}</h2>
+<p><a href="/project/{{ pid }}/attack/notes">Attack Notes</a> | 
+<a href="/project/{{ pid }}/host/notes">Host Notes</a> | 
+<a href="/project/{{ pid }}/import">Import Data</a></p>
+
 
 <h3>Possible Attacks</h3>
 {% if not attacks %}
