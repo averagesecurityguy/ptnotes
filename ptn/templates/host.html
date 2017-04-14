@@ -17,17 +17,17 @@
 
 <h3>Notes</h3>
 <form method='POST' action="/project/{{ pid }}/host/{{ host }}">
-    <textarea name="note">{{ data['note'] }}</textarea><br />
+    <textarea name="note">{{ note }}</textarea><br />
     <input type="submit" value="Update Notes" />
 </form>
 
 
-{% if data != {} %}
+{% if details != {} %}
     <p>Click on the heading to see the associated data.</p>
     {% for k in keys %}
 	<h3 onclick="toggle('{{ k }}')">{{ k }}</h3>
         <section class="note" id="{{ k }}" style="display: none;">
-        {% for n in data[k] %}
+        {% for n in details[k] %}
             <pre>{{ n }}</pre>
         {% endfor %}
         </section>
