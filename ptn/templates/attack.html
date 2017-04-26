@@ -13,11 +13,21 @@
 <h3>Hosts</h3>
 <ul class="column4">
 {% for item in items %}
+    <li>
     {% if item[0] == '' %}
-        <li>{{ item[1] }} ({{ item[2] }})</li>
+        {{ item[1] }}:{{ item[2] }}
     {% else %}
-        <li><a href="/project/{{ pid }}/item/{{ item[0] }}">{{ item[1] }} ({{ item[2] }})</a></li>
+        <a href="/project/{{ pid }}/item/{{ item[0] }}">{{ item[1] }}:{{ item[2] }}</a>
     {% endif %}
+
+    {% if attack['name'] == "Web Server Detection" %}
+        {% if '443' in item[2] %}
+            <a href="https://{{ item[1] }}:{{ item[2] }}">View</a>
+        {% else %}
+            <a href="http://{{ item [1] }}:{{ item[2] }}">View</a>
+        {% endif %}
+    {% endif %}
+    </li>
 {% endfor %}
 </ul>
 
