@@ -48,6 +48,10 @@ a:hover {
   opacity: .5;
 }
 
+.extlink:visited {
+  color: #f00;
+}
+
 td a {
   padding: 0 1em;
 }

@@ -22,9 +22,9 @@
 
     {% if attack['name'] == "Web Server Detection" %}
         {% if '443' in item[2] %}
-            <a href="https://{{ item[1] }}:{{ item[2] }}">View</a>
+            <a href="https://{{ item[1] }}:{{ item[2] }}" class="extlink">View</a>
         {% else %}
-            <a href="http://{{ item [1] }}:{{ item[2] }}">View</a>
+            <a href="http://{{ item [1] }}:{{ item[2] }}" class="extlink">View</a>
         {% endif %}
     {% endif %}
     </li>
