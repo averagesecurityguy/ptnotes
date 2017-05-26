@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block data %}
 
+<a href="/project/{{ pid }}">Return to project page.</a>
+
 <h3>Import Scan Data</h3>
 <form action="/project/{{ pid }}/import" method="post" enctype="multipart/form-data">
   <input type="file" name="scans[]" multiple placeholder="Enter Nessus or Nmap files."><br />
