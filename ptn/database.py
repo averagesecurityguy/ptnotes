@@ -214,7 +214,7 @@ class ScanDatabase(Database):
         """
         Get all information associated with an IP.
         """
-        host = {'note': '', 'ports': [], 'items': []}
+        host = {'note': '', 'tcp': [], 'udp': [], 'items': []}
 
         self.log.debug('Getting note for host {0}.'.format(ip))
         stmt = "SELECT note FROM hosts WHERE ip=?"
@@ -228,7 +228,12 @@ class ScanDatabase(Database):
         if self.execute_sql(stmt, (ip,)) is True:
             host['items'] = self.cur.fetchall()
 
-        host['ports'] = set([p['port'] for p in host['items']])
+        for item in host['items']:
+            if item['protocol'] == 'tcp':
+                host['tcp'].append(item['port'])
+
+            if item['protocol'] == 'udp':
+                host['udp'].append(item['port'])
 
         return host
 

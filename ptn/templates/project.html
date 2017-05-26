@@ -41,12 +41,14 @@
 	<table>
         <tr>
             <th>Host</th>
-            <th>Ports</th>
+            <th>TCP Ports</th>
+            <th>UDP Ports</th>
         </tr>
         {% for h in hosts %}
             <tr>
                 <td><a href="/project/{{ pid }}/host/{{ h['ip'] }}">{{ h['ip'] }}</a></td>
-                <td>{{ ', '.join(ports[h['ip']]) }}</td>
+                <td>{{ ', '.join(ports[h['ip']]['tcp']) }}</td>
+                <td>{{ ', '.join(ports[h['ip']]['udp']) }}</td>
             </tr>
         {% endfor %}
     </table>

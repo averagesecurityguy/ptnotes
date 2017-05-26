@@ -189,7 +189,9 @@ def get_project(pid):
     for host in hosts:
         ip = host['ip']
         data = db.get_host(host['ip'])
-        ports[ip] = [str(p) for p in data['ports'] if p != 0]
+        tcp = set([str(p) for p in data['tcp'] if p != 0])
+        udp = set([str(p) for p in data['udp'] if p != 0])
+        ports[ip] = {'tcp': tcp, 'udp': udp}
 
     return flask.render_template('project.html', pid=pid,
                                  note=project['note'], name=project['name'],
