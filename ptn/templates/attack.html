@@ -10,7 +10,8 @@
 	<input type="submit" value="Update Notes" />
 </form>
 
-<h3>Hosts</h3>
+<h3>Affected Hosts</h3>
+<p>View item details for each affected host.</p>
 <ul class="column4">
 {% for item in items %}
     <li>
@@ -28,6 +29,14 @@
         {% endif %}
     {% endif %}
     </li>
+{% endfor %}
+</ul>
+
+<h3>Raw Host List</h3>
+<p>A list of affected hosts suitable for use with command line tools.</p>
+<ul>
+{% for item in items %}
+    <li>{{ item[1] }} {{ item[2] }}</li>
 {% endfor %}
 </ul>
 
