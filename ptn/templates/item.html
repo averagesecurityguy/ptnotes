@@ -3,7 +3,7 @@
 <a href="/project/{{ pid }}">Return to project page.</a>
 
 {% if item != {} %}
-    <h2>{{ item['ip'] }} ({{ item['port'] }}/{{ item['protocol'] }})</h2>
+    <h2><a href="/project/{{ pid }}/host/{{ item['ip'] }}">{{ item['ip'] }}</a> ({{ item['port'] }}/{{ item['protocol'] }})</h2>
 
     <pre>{{ item['note'] }}</pre>
 {% endif %}
