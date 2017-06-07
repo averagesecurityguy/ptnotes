@@ -4,7 +4,7 @@
 <a href="/project/{{ pid }}">Return to project page.</a>
 {% for note in notes %}
     {% if note[1] != "" and note[1] != None %}
-        <h3>{{ note[0] }}</h3>
+        <h3><a href="/project/{{ pid }}/host/{{ note[0] }}">{{ note[0] }}</a></h3>
         <pre>{{ note[1] }}</pre>
     {% endif %}
 {% endfor %}
