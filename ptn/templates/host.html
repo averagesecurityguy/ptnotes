@@ -23,9 +23,10 @@
 
 
 {% if details != {} %}
-    <p>Click on the heading to see the associated data.</p>
+    <h3>Host Details</h3>
+    <p>Click on each port heading to see the associated data.</p>
     {% for k in keys %}
-	<h3 onclick="toggle('{{ k }}')">{{ k }}</h3>
+	<h4 onclick="toggle('{{ k }}')">{{ k }}</h4>
         <section class="note" id="{{ k }}" style="display: none;">
         {% for n in details[k] %}
             <pre>{{ n }}</pre>
