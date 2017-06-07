@@ -50,7 +50,7 @@ def host(pid, ip):
         note = flask.request.form['note']
         db.update_host_note(ip, note)
 
-    data = db.get_host(ip)
+    data = db.get_host_details(ip)
 
     if data is None:
         flask.abort(404)
@@ -193,11 +193,8 @@ def get_project(pid):
     attacks = db.get_attacks()
 
     for host in hosts:
-        ip = host['ip']
-        data = db.get_host(host['ip'])
-        tcp = set([str(p) for p in data['tcp'] if p != 0])
-        udp = set([str(p) for p in data['udp'] if p != 0])
-        ports[ip] = {'tcp': tcp, 'udp': udp}
+        data = db.get_host_ports(host['ip'])
+        ports[host['ip']] = {'tcp': data['tcp'], 'udp': data['udp']}
 
     return flask.render_template('project.html', pid=pid,
                                  note=project['note'], name=project['name'],

@@ -218,11 +218,36 @@ class ScanDatabase(Database):
         stmt = "UPDATE hosts SET note=? WHERE ip=?"
         return self.execute_sql(stmt, (note, ip))
 
-    def get_host(self, ip):
+    def get_host_ports(self, ip):
+        """
+        Get a list of ports associated with the host.
+        """
+        ports = {'tcp': [], 'udp': []}
+
+        self.log.debug('Getting all items for host {0}.'.format(ip))
+        stmt = "SELECT port, protocol FROM items WHERE ip=?"
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            host['items'] = self.cur.fetchall()
+
+        for p in self.cur.fetchall():
+            if p['protocol'] == 'tcp':
+                ports['tcp'].append(p['port'])
+            elif p['protocol'] == 'udp':
+                ports['udp'].append(p['port'])
+            else:
+                pass
+
+        ports['tcp'] = sorted(set(ports['tcp']))
+        ports['udp'] = sorted(set(ports['udp']))
+
+        return ports
+
+    def get_host_details(self, ip):
         """
         Get all information associated with an IP.
         """
-        host = {'note': '', 'tcp': [], 'udp': [], 'items': []}
+        host = {'note': '', items': []}
 
         self.log.debug('Getting note for host {0}.'.format(ip))
         stmt = "SELECT note FROM hosts WHERE ip=?"
@@ -235,13 +260,6 @@ class ScanDatabase(Database):
 
         if self.execute_sql(stmt, (ip,)) is True:
             host['items'] = self.cur.fetchall()
-
-        for item in host['items']:
-            if item['protocol'] == 'tcp':
-                host['tcp'].append(item['port'])
-
-            if item['protocol'] == 'udp':
-                host['udp'].append(item['port'])
 
         return host
 
