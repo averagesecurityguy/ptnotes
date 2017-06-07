@@ -51,11 +51,11 @@ class Attack():
             if items != []:
                 # If the attack does not exist, create it. If it does exist then
                 # add hosts to it.
-                attack = self.db.get_attack_by_name(a['name'])
+                attack = self.db.attackdb.get_attack_by_name(a['name'])
                 if attack is None:
-                    self.db.create_attack(a['name'], a['description'], items)
+                    self.db.attackdb.create_attack(a['name'], a['description'], items)
                 else:
-                    self.db.update_attack_hosts(attack['id'], items)
+                    self.db.attackdb.update_attack_hosts(attack['id'], items)
 
     def get_items(self, attack):
         """
@@ -64,7 +64,7 @@ class Attack():
         self.log.debug('Getting items for {0}.'.format(attack['name']))
         items = []
 
-        items.extend(self.db.get_items_by_keywords(attack.get('keywords')))
+        items.extend(self.db.itemdb.get_items_by_keywords(attack.get('keywords')))
 
         self.log.debug('Found {0} total items.'.format(len(items)))
 

@@ -258,8 +258,8 @@ class Import():
         """
         h = hashlib.sha256(''.join([ip, str(port), proto, note])).hexdigest()
 
-        if self.db.get_items_by_hash(h) == []:
-            if self.db.create_item(ip, port, proto, note, h) is False:
+        if self.db.itemdb.get_items_by_hash(h) == []:
+            if self.db.itemdb.create_item(ip, port, proto, note, h) is False:
                 self.log.error('Unable to create new item in database.')
         else:
             self.log.info('Item already exists in database.')
@@ -268,8 +268,8 @@ class Import():
         """
         Only add new host to database if it does not exist.
         """
-        if self.db.get_host_ip(ip) == []:
-            if self.db.create_host(ip) is False:
+        if self.db.hostdb.get_host_ip(ip) == []:
+            if self.db.hostdb.create_host(ip) is False:
                 self.log.error('Unable to create host record in database.')
         else:
             self.log.info('Host already exists in database.')

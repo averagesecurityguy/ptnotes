@@ -48,9 +48,9 @@ def host(pid, ip):
 
     if flask.request.method == 'POST':
         note = flask.request.form['note']
-        db.update_host_note(ip, note)
+        db.hostdb.update_host_note(ip, note)
 
-    data = db.get_host_details(ip)
+    data = db.hostdb.get_host_details(ip)
 
     if data is None:
         flask.abort(404)
@@ -78,7 +78,7 @@ def host_notes(pid):
     """
     project = get_project_db(pid)
     db = database.ScanDatabase(project['dbfile'])
-    notes = db.get_host_notes()
+    notes = db.hostdb.get_host_notes()
 
     return flask.render_template('notes.html', pid=pid, notes=notes)
 
@@ -90,7 +90,7 @@ def item(pid, item_id):
     """
     project = get_project_db(pid)
     db = database.ScanDatabase(project['dbfile'])
-    item = db.get_item(item_id)
+    item = db.itemdb.get_item(item_id)
 
     if item is None:
         flask.abort(404)
@@ -108,9 +108,9 @@ def get_attack(pid, aid):
 
     if flask.request.method == 'POST':
         note = flask.request.form['note']
-        db.update_attack_note(aid, note)
+        db.attackdb.update_attack_note(aid, note)
 
-    attack = db.get_attack(aid)
+    attack = db.attackdb.get_attack(aid)
 
     if attack is None:
         flask.abort(404)
@@ -129,7 +129,7 @@ def import_scan(pid):
     db = database.ScanDatabase(project['dbfile'])
 
     if flask.request.method == 'GET':
-        files = db.get_imported_files()
+        files = db.importdb.get_imported_files()
 
         return flask.render_template('import.html', pid=pid, files=files)
 
@@ -140,7 +140,7 @@ def import_scan(pid):
         for scan in scans:
             res = i.import_scan(scan.read())
             if res is True:
-                db.add_import_file(scan.filename)
+                db.importdb.add_import_file(scan.filename)
 
         a = attacks.Attack(project['dbfile'])
         a.find_attacks()
@@ -155,7 +155,7 @@ def attack_notes(pid):
     """
     project = get_project_db(pid)
     db = database.ScanDatabase(project['dbfile'])
-    notes = db.get_attack_notes()
+    notes = db.attackdb.get_attack_notes()
 
     return flask.render_template('notes.html', pid=pid, notes=notes)
 
@@ -189,11 +189,11 @@ def get_project(pid):
     ports = {}
 
     db = database.ScanDatabase(project['dbfile'])
-    hosts = db.get_hosts()
-    attacks = db.get_attacks()
+    hosts = db.hostdb.get_hosts()
+    attacks = db.attackdb.get_attacks()
 
     for host in hosts:
-        data = db.get_host_ports(host['ip'])
+        data = db.hostdb.get_host_ports(host['ip'])
         ports[host['ip']] = {'tcp': data['tcp'], 'udp': data['udp']}
 
     return flask.render_template('project.html', pid=pid,

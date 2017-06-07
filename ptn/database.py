@@ -16,6 +16,9 @@ import validate
 PRJ_FILE = os.path.join('data', 'projects.sqlite')
 
 
+class DatabaseException(Exception):
+    pass
+
 class Database():
     """
     Class to handle all database interactions.
@@ -74,20 +77,36 @@ class Database():
             return False
 
 
-class ScanDatabase(Database):
+class ScanDatabase():
     """
     Class to handle scan data and attack notes.
     """
     def __init__(self, filename):
+        self.log = logging.getLogger('DATABASE')
+        self.itemdb = ItemDatabase(filename)
+        self.attackdb = AttackDatabase(filename)
+        self.hostdb = HostDatabase(filename)
+        self.importdb = ImportDatabase(filename)
+
+    def get_stats(self):
+        """
+        Get host and attack stats for the database.
+        """
+        self.log.debug('Gathering stats.')
+
+        hosts = len(self.hostdb.get_hosts())
+        attacks = len(self.attackdb.get_attacks())
+
+        return 'Hosts: {0}  Attacks {1}'.format(hosts, attacks)
+
+
+class ItemDatabase(Database):
+    """
+    Class to handle item data.
+    """
+    def __init__(self, filename):
         Database.__init__(self, filename)
 
-    def initialize_scan_database(self):
-        """
-        Create a new scan database.
-        """
-        #
-        # Define our SQL statements
-        #
         items = '''
         CREATE TABLE IF NOT EXISTS items (
             id integer primary key autoincrement,
@@ -100,39 +119,8 @@ class ScanDatabase(Database):
         '''
         ires = self.execute_sql(items)
 
-        attacks = '''
-        CREATE TABLE IF NOT EXISTS attacks (
-            id integer primary key autoincrement,
-            name text,
-            description text,
-            items text,
-            note text
-        )
-        '''
-        ares = self.execute_sql(attacks)
-
-        hosts = '''
-        CREATE TABLE IF NOT EXISTS hosts (
-            id integer primary key autoincrement,
-            ip text,
-            note text
-        )
-        '''
-        hres = self.execute_sql(hosts)
-
-        imports = '''
-        CREATE TABLE IF NOT EXISTS imports (
-            id integer primary key autoincrement,
-            filename text
-        )
-        '''
-        pres = self.execute_sql(imports)
-
-        if (ires is False) or (ares is False) or (hres is False) or (pres is False):
-            self.log.critical('Could not initialize database: {0}.'.format(self.filename))
-            return False
-
-        return True
+        if ires is False:
+            raise DatabaseException('Could not create items table.')
 
     def create_item(self, ip, port, protocol, note, hash):
         """
@@ -164,101 +152,57 @@ class ScanDatabase(Database):
         else:
             return {}
 
-    def create_host(self, ip):
+    def get_items_by_hash(self, hash):
         """
-        Create a new host identified by the IP address.
+        Return a list of hosts with the specified hash.
         """
-        self.log.debug('Creating new host for {0}.'.format(ip))
+        self.log.debug('Getting items associated with hash {0}.'.format(hash))
 
-        stmt = "INSERT INTO hosts (ip) VALUES(?)"
-        return self.execute_sql(stmt, (ip,))
-
-    def get_hosts(self):
-        """
-        Get all hosts.
-        """
-        self.log.debug('Getting all hosts.')
-        stmt = "SELECT DISTINCT ip FROM hosts ORDER BY ip"
-
-        if self.execute_sql(stmt) is True:
-            return self.cur.fetchall()
-        else:
-            return []
-
-    def get_host_ip(self, ip):
-        """
-        Return the host if it exists in the database.
-        """
-        self.log.debug('Getting host record associated with IP {0}.'.format(ip))
-
-        stmt = "SELECT ip FROM hosts WHERE ip=?"
-        if self.execute_sql(stmt, (ip,)) is True:
+        stmt = "SELECT ip FROM items WHERE hash=?"
+        if self.execute_sql(stmt, (hash,)) is True:
             return [i['ip'] for i in self.cur.fetchall()]
         else:
             return []
 
-    def get_host_notes(self):
+    def get_items_by_keywords(self, keywords):
         """
-        Get all notes for hosts.
+        Return a list of items with the specified keywords.
         """
-        self.log.debug('Getting all host notes.')
-        stmt = "SELECT ip, note from hosts ORDER BY ip"
-
-        if self.execute_sql(stmt) is True:
-            return self.cur.fetchall()
-        else:
+        if keywords is None:
             return []
+        else:
+            self.log.debug('Getting items associated with keywords {0}.'.format(','.join(keywords)))
 
-    def update_host_note(self, ip, note):
-        """
-        Update the host note.
-        """
-        self.log.debug('Updating note for host {0}.'.format(ip))
+            stmt = "SELECT id, ip, port FROM items WHERE "
+            stmt += ' OR '.join(["note LIKE ?" for i in xrange(len(keywords))])
+            kw_strs = tuple(['%{0}%'.format(kw) for kw in keywords])
 
-        stmt = "UPDATE hosts SET note=? WHERE ip=?"
-        return self.execute_sql(stmt, (note, ip))
-
-    def get_host_ports(self, ip):
-        """
-        Get a list of ports associated with the host.
-        """
-        ports = {'tcp': [], 'udp': []}
-
-        self.log.debug('Getting all items for host {0}.'.format(ip))
-        stmt = "SELECT DISTINCT port, protocol FROM items WHERE ip=? ORDER BY port"
-
-        if self.execute_sql(stmt, (ip,)) is True:
-            host['items'] = self.cur.fetchall()
-
-        for p in self.cur.fetchall():
-            if p['protocol'] == 'tcp':
-                ports['tcp'].append(p['port'])
-            elif p['protocol'] == 'udp':
-                ports['udp'].append(p['port'])
+            if self.execute_sql(stmt, kw_strs) is True:
+                return [(i['id'], i['ip'], i['port']) for i in self.cur.fetchall()]
             else:
-                pass
+                return []
 
-        return ports
 
-    def get_host_details(self, ip):
-        """
-        Get all information associated with an IP.
-        """
-        host = {'note': '', items': []}
+class AttackDatabase(Database):
+    """
+    Class to handle attack data.
+    """
+    def __init__(self, filename):
+        Database.__init__(self, filename)
 
-        self.log.debug('Getting note for host {0}.'.format(ip))
-        stmt = "SELECT note FROM hosts WHERE ip=?"
+        attacks = '''
+        CREATE TABLE IF NOT EXISTS attacks (
+            id integer primary key autoincrement,
+            name text,
+            description text,
+            items text,
+            note text
+        )
+        '''
+        ares = self.execute_sql(attacks)
 
-        if self.execute_sql(stmt, (ip,)) is True:
-            host['note'] = self.cur.fetchone()['note']
-
-        self.log.debug('Getting all items for host {0}.'.format(ip))
-        stmt = "SELECT * FROM items WHERE ip=? ORDER BY port"
-
-        if self.execute_sql(stmt, (ip,)) is True:
-            host['items'] = self.cur.fetchall()
-
-        return host
+        if ares is False:
+            raise DatabaseException('Could not create attack table.')
 
     def create_attack(self, name, description, items):
         """
@@ -335,46 +279,140 @@ class ScanDatabase(Database):
         stmt = "UPDATE attacks SET note=? WHERE id=?"
         return self.execute_sql(stmt, (note, aid))
 
-    def get_stats(self):
-        """
-        Get host and attack stats for the database.
-        """
-        self.log.debug('Gathering stats.')
 
-        hosts = len(self.get_hosts())
-        attacks = len(self.get_attacks())
+class HostDatabase(Database):
+    """
+    Class to handle host data.
+    """
+    def __init__(self, filename):
+        Database.__init__(self, filename)
 
-        return 'Hosts: {0}  Attacks {1}'.format(hosts, attacks)
+        hosts = '''
+        CREATE TABLE IF NOT EXISTS hosts (
+            id integer primary key autoincrement,
+            ip text,
+            note text
+        )
+        '''
+        hres = self.execute_sql(hosts)
 
-    def get_items_by_hash(self, hash):
+        if hres is False:
+            raise DatabaseException('Could not create hosts table.')
+
+    def create_host(self, ip):
         """
-        Return a list of hosts with the specified hash.
+        Create a new host identified by the IP address.
         """
-        self.log.debug('Getting items associated with hash {0}.'.format(hash))
+        self.log.debug('Creating new host for {0}.'.format(ip))
 
-        stmt = "SELECT ip FROM items WHERE hash=?"
-        if self.execute_sql(stmt, (hash,)) is True:
+        stmt = "INSERT INTO hosts (ip) VALUES(?)"
+        return self.execute_sql(stmt, (ip,))
+
+    def get_hosts(self):
+        """
+        Get all hosts.
+        """
+        self.log.debug('Getting all hosts.')
+        stmt = "SELECT DISTINCT ip FROM hosts ORDER BY ip"
+
+        if self.execute_sql(stmt) is True:
+            return self.cur.fetchall()
+        else:
+            return []
+
+    def get_host_ip(self, ip):
+        """
+        Return the host if it exists in the database.
+        """
+        self.log.debug('Getting host record associated with IP {0}.'.format(ip))
+
+        stmt = "SELECT ip FROM hosts WHERE ip=?"
+        if self.execute_sql(stmt, (ip,)) is True:
             return [i['ip'] for i in self.cur.fetchall()]
         else:
             return []
 
-    def get_items_by_keywords(self, keywords):
+    def get_host_notes(self):
         """
-        Return a list of items with the specified keywords.
+        Get all notes for hosts.
         """
-        if keywords is None:
-            return []
+        self.log.debug('Getting all host notes.')
+        stmt = "SELECT ip, note from hosts ORDER BY ip"
+
+        if self.execute_sql(stmt) is True:
+            return self.cur.fetchall()
         else:
-            self.log.debug('Getting items associated with keywords {0}.'.format(','.join(keywords)))
+            return []
 
-            stmt = "SELECT id, ip, port FROM items WHERE "
-            stmt += ' OR '.join(["note LIKE ?" for i in xrange(len(keywords))])
-            kw_strs = tuple(['%{0}%'.format(kw) for kw in keywords])
+    def update_host_note(self, ip, note):
+        """
+        Update the host note.
+        """
+        self.log.debug('Updating note for host {0}.'.format(ip))
 
-            if self.execute_sql(stmt, kw_strs) is True:
-                return [(i['id'], i['ip'], i['port']) for i in self.cur.fetchall()]
-            else:
-                return []
+        stmt = "UPDATE hosts SET note=? WHERE ip=?"
+        return self.execute_sql(stmt, (note, ip))
+
+    def get_host_ports(self, ip):
+        """
+        Get a list of ports associated with the host.
+        """
+        ports = {'tcp': [], 'udp': []}
+
+        self.log.debug('Getting all items for host {0}.'.format(ip))
+        stmt = "SELECT DISTINCT port, protocol FROM items WHERE ip=? ORDER BY port"
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            for p in self.cur.fetchall():
+                if p['port'] == 0:
+                    continue
+                if p['protocol'] == 'tcp':
+                    ports['tcp'].append(str(p['port']))
+                elif p['protocol'] == 'udp':
+                    ports['udp'].append(str(p['port']))
+                else:
+                    pass
+
+        return ports
+
+    def get_host_details(self, ip):
+        """
+        Get all information associated with an IP.
+        """
+        host = {'note': '', 'items': []}
+
+        self.log.debug('Getting note for host {0}.'.format(ip))
+        stmt = "SELECT note FROM hosts WHERE ip=?"
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            host['note'] = self.cur.fetchone()['note']
+
+        self.log.debug('Getting all items for host {0}.'.format(ip))
+        stmt = "SELECT * FROM items WHERE ip=? ORDER BY port"
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            host['items'] = self.cur.fetchall()
+
+        return host
+
+
+class ImportDatabase(Database):
+    """
+    Class to handle import data.
+    """
+    def __init__(self, filename):
+        Database.__init__(self, filename)
+
+        imports = '''
+        CREATE TABLE IF NOT EXISTS imports (
+            id integer primary key autoincrement,
+            filename text
+        )
+        '''
+        ires = self.execute_sql(imports)
+
+        if ires is False:
+            raise DatabaseException('Could not create imports table.')
 
     def get_imported_files(self):
         """
@@ -413,9 +451,6 @@ class ProjectDatabase(Database):
         """
         Create a new project database.
         """
-        #
-        # Define our SQL statements
-        #
         projects = '''
         CREATE TABLE IF NOT EXISTS projects (
             id integer primary key autoincrement,
@@ -427,10 +462,7 @@ class ProjectDatabase(Database):
         res = self.execute_sql(projects)
 
         if res is False:
-            self.log.critical('Could not initialize project database.')
-            return False
-
-        return True
+            raise DatabaseException('Could not initialize project database.')
 
     def create_project(self, name):
         """
@@ -440,11 +472,11 @@ class ProjectDatabase(Database):
         db_name = ''.join([random.choice('0123456789abcdef') for _ in range(12)])
         db_name = os.path.join('data', db_name + '.sqlite')
 
-        scan_db = ScanDatabase(db_name)
-        if scan_db.initialize_scan_database() is True:
+        try:
+            scan_db = ScanDatabase(db_name)
             stmt = "INSERT INTO projects (name, dbfile) VALUES(?,?)"
             return self.execute_sql(stmt, (name, db_name))
-        else:
+        except DatabaseException:
             return False
 
     def get_project(self, pid):
