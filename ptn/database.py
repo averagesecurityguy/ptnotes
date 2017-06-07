@@ -225,7 +225,7 @@ class ScanDatabase(Database):
         ports = {'tcp': [], 'udp': []}
 
         self.log.debug('Getting all items for host {0}.'.format(ip))
-        stmt = "SELECT port, protocol FROM items WHERE ip=?"
+        stmt = "SELECT DISTINCT port, protocol FROM items WHERE ip=? ORDER BY port"
 
         if self.execute_sql(stmt, (ip,)) is True:
             host['items'] = self.cur.fetchall()
@@ -237,9 +237,6 @@ class ScanDatabase(Database):
                 ports['udp'].append(p['port'])
             else:
                 pass
-
-        ports['tcp'] = sorted(set(ports['tcp']))
-        ports['udp'] = sorted(set(ports['udp']))
 
         return ports
 
