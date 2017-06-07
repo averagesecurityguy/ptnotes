@@ -125,16 +125,22 @@ def import_scan(pid):
     """
     Import scan data into the database associated with the pid.
     """
+    project = get_project_db(pid)
+    db = database.ScanDatabase(project['dbfile'])
+
     if flask.request.method == 'GET':
-        return flask.render_template('import.html', pid=pid)
+        files = db.get_imported_files()
+
+        return flask.render_template('import.html', pid=pid, files=files)
 
     else:
-        project = get_project_db(pid)
         i = importscan.Import(project['dbfile'])
         scans = flask.request.files.getlist("scans[]")
 
         for scan in scans:
-            i.import_scan(scan.read())
+            res = i.import_scan(scan.read())
+            if res is True:
+                db.add_import_file(scan.filename)
 
         a = attacks.Attack(project['dbfile'])
         a.find_attacks()
@@ -169,7 +175,7 @@ def projects():
     project_list = pdb.get_projects()
     for project in project_list:
         db = database.ScanDatabase(project['dbfile'])
-        stats[project['id']] = db.get_stats() 
+        stats[project['id']] = db.get_stats()
 
     return flask.render_template('projects.html', projects=project_list, stats=stats)
 

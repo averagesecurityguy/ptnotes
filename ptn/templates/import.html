@@ -8,4 +8,12 @@
   <input type="file" name="scans[]" multiple placeholder="Enter Nessus or Nmap files."><br />
   <input type="submit" value="Import">
 </form>
+
+<h3>Imported Files</h3>
+<ul>
+    {% for file in files %}
+        <li>{{ file }}</li>
+    {% endfor %}
+</ul>
+
 {% endblock %}

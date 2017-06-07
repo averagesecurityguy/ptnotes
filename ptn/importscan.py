@@ -26,9 +26,9 @@ class Import():
 
         except (errors.ScanImportError):
             self.log.error('Failed to parse scan file.')
-            return 'Failed'
+            return False
 
-        return 'Succeeded'
+        return True
 
     def get_file_type(self, header):
         """
@@ -273,5 +273,3 @@ class Import():
                 self.log.error('Unable to create host record in database.')
         else:
             self.log.info('Host already exists in database.')
-
-            

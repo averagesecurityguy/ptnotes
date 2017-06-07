@@ -119,8 +119,16 @@ class ScanDatabase(Database):
         )
         '''
         hres = self.execute_sql(hosts)
-        
-        if (ires is False) or (ares is False) or (hres is False):
+
+        imports = '''
+        CREATE TABLE IF NOT EXISTS imports (
+            id integer primary key autoincrement,
+            filename text
+        )
+        '''
+        pres = self.execute_sql(imports)
+
+        if (ires is False) or (ares is False) or (hres is False) or (pres is False):
             self.log.critical('Could not initialize database: {0}.'.format(self.filename))
             return False
 
@@ -352,6 +360,27 @@ class ScanDatabase(Database):
                 return [(i['id'], i['ip'], i['port']) for i in self.cur.fetchall()]
             else:
                 return []
+
+    def get_imported_files(self):
+        """
+        Get all imported files for the specified project id.
+        """
+        self.log.debug('Getting all imported files.')
+        stmt = "SELECT filename FROM imports ORDER BY filename"
+
+        if self.execute_sql(stmt) is True:
+            return [p['filename'] for p in self.cur.fetchall()]
+        else:
+            return []
+
+    def add_import_file(self, filename):
+        """
+        Add a filename to the table of imported files for a project.
+        """
+        self.log.debug('Adding imported file {0}.'.format(filename))
+
+        stmt = "INSERT INTO imports (filename) VALUES (?)"
+        return self.execute_sql(stmt, (filename,))
 
 
 class ProjectDatabase(Database):
