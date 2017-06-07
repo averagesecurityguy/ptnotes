@@ -99,6 +99,17 @@ class ScanDatabase():
 
         return 'Hosts: {0}  Attacks {1}'.format(hosts, attacks)
 
+    def get_host_details(self, ip):
+        """
+        Get all information associated with an IP.
+        """
+        host = {'note': '', 'items': []}
+
+        host['note'] = self.hostdb.get_host_note(ip)
+        host['items'] = self.itemdb.get_items_by_ip(ip)
+
+        return host
+
 
 class ItemDatabase(Database):
     """
@@ -151,6 +162,42 @@ class ItemDatabase(Database):
             return self.cur.fetchone()
         else:
             return {}
+
+    def get_ports(self):
+        """
+        Get all hosts and ports in the database.
+        """
+        ports = {}
+
+        self.log.debug('Getting all hosts and ports from the database.')
+        stmt = "SELECT ip, port, protocol FROM items"
+
+        if self.execute_sql(stmt) is True:
+            for p in self.cur.fetchall():
+                if p['port'] == 0:
+                    continue
+
+                port = (p['protocol'], str(p['port']))
+
+                if p['ip'] in ports:
+                    ports[p['ip']].append(port)
+                else:
+                    ports[p['ip']] = []
+                    ports[p['ip']].append(port)
+
+        return ports
+
+    def get_items_by_ip(self, ip):
+        """
+        Get all items associated with a host.
+        """
+        self.log.debug('Getting items for host {0}.'.format(ip))
+        stmt = "SELECT * FROM items WHERE ip=?"
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            return self.cur.fetchall()
+        else:
+            return []
 
     def get_items_by_hash(self, hash):
         """
@@ -312,7 +359,7 @@ class HostDatabase(Database):
         """
         Get all hosts.
         """
-        self.log.debug('Getting all hosts.')
+        self.log.debug('Getting summary data for all hosts.')
         stmt = "SELECT DISTINCT ip FROM hosts ORDER BY ip"
 
         if self.execute_sql(stmt) is True:
@@ -344,6 +391,18 @@ class HostDatabase(Database):
         else:
             return []
 
+    def get_host_note(self, ip):
+        """
+        Get notes for the specified host.
+        """
+        self.log.debug('Getting notes for {0}.'.format(ip))
+        stmt = "SELECT note from hosts WHERE ip=?"
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            return self.cur.fetchone()['note']
+        else:
+            return ""
+
     def update_host_note(self, ip, note):
         """
         Update the host note.
@@ -352,48 +411,6 @@ class HostDatabase(Database):
 
         stmt = "UPDATE hosts SET note=? WHERE ip=?"
         return self.execute_sql(stmt, (note, ip))
-
-    def get_host_ports(self, ip):
-        """
-        Get a list of ports associated with the host.
-        """
-        ports = {'tcp': [], 'udp': []}
-
-        self.log.debug('Getting all items for host {0}.'.format(ip))
-        stmt = "SELECT DISTINCT port, protocol FROM items WHERE ip=? ORDER BY port"
-
-        if self.execute_sql(stmt, (ip,)) is True:
-            for p in self.cur.fetchall():
-                if p['port'] == 0:
-                    continue
-                if p['protocol'] == 'tcp':
-                    ports['tcp'].append(str(p['port']))
-                elif p['protocol'] == 'udp':
-                    ports['udp'].append(str(p['port']))
-                else:
-                    pass
-
-        return ports
-
-    def get_host_details(self, ip):
-        """
-        Get all information associated with an IP.
-        """
-        host = {'note': '', 'items': []}
-
-        self.log.debug('Getting note for host {0}.'.format(ip))
-        stmt = "SELECT note FROM hosts WHERE ip=?"
-
-        if self.execute_sql(stmt, (ip,)) is True:
-            host['note'] = self.cur.fetchone()['note']
-
-        self.log.debug('Getting all items for host {0}.'.format(ip))
-        stmt = "SELECT * FROM items WHERE ip=? ORDER BY port"
-
-        if self.execute_sql(stmt, (ip,)) is True:
-            host['items'] = self.cur.fetchall()
-
-        return host
 
 
 class ImportDatabase(Database):

@@ -35,7 +35,7 @@
 {% endif %}
 
 <h3>Imported Hosts</h3>
-{% if not hosts %}
+{% if not ports %}
 	<p>No hosts have been import yet, please import a Nessus or Nmap XML file.</p>
 {% else %}
 	<table>
@@ -44,11 +44,11 @@
             <th>TCP Ports</th>
             <th>UDP Ports</th>
         </tr>
-        {% for h in hosts %}
+        {% for p in ports %}
             <tr>
-                <td><a href="/project/{{ pid }}/host/{{ h['ip'] }}">{{ h['ip'] }}</a></td>
-                <td>{{ ', '.join(ports[h['ip']]['tcp']) }}</td>
-                <td>{{ ', '.join(ports[h['ip']]['udp']) }}</td>
+                <td><a href="/project/{{ pid }}/host/{{ p }}">{{ p }}</a></td>
+                <td>{{ ', '.join(ports[p]['tcp']) }}</td>
+                <td>{{ ', '.join(ports[p]['udp']) }}</td>
             </tr>
         {% endfor %}
     </table>
