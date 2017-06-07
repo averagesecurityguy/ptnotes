@@ -93,5 +93,10 @@
         "name": "IKE Aggressive Mode",
         "description": "These servers allow IKE connections, they should be checked for aggressive mode support.",
         "keywords": ["--62694--"]
+    },
+    {
+        "name": "SWEET32",
+        "description": "These servers may be vulnerable to SWEET32. The vulnerability can be verified using YAWAST by Adam Caudill or sweet32.go by AverageSecurityGuy.",
+        "keywords": ["--94437--"]
     }
 ]
