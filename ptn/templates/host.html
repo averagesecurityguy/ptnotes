@@ -1,30 +1,30 @@
 {% extends "base.html" %}
 {% block data %}
-<script type="text/javascript">
-    function toggle(id) 
-    {
-        var e = document.getElementById(id);
-        if ( e.style.display == 'block' )
-            e.style.display = 'none';
-        else
-            e.style.display = 'block';
-    }
-</script>
 
-<a href="/project/{{ pid }}">Return to project page.</a>
+<h2>{{ name }}</h2>
+<p>
+<a href="/project/{{ pid }}">Project Summary</a> |
+<a href="/project/{{ pid }}/hosts">Imported Hosts</a> |
+<a href="/project/{{ pid }}/attack/notes">Attack Notes</a> | 
+<a href="/project/{{ pid }}/host/notes">Host Notes</a> | 
+<a href="/project/{{ pid }}/import">Import Data</a>
+</p>
 
-<h2>{{ host }}</h2>
-
-<h3>Notes</h3>
+<section class="notes">
+<h4>Notes</h4>
 <form method='POST' action="/project/{{ pid }}/host/{{ host }}">
     <textarea name="note">{{ note }}</textarea><br />
     <input type="submit" value="Update Notes" />
 </form>
-
+</section>
 
 {% if details != {} %}
-    <h3>Host Details</h3>
+    <section class="details">
+
+    <h3>{{ host }}</h3>
     <p>Click on each port heading to see the associated data.</p>
+
+    <section class="scroll">
     {% for k in keys %}
 	<h4 onclick="toggle('{{ k }}')">{{ k }}</h4>
         <section class="note" id="{{ k }}" style="display: none;">
@@ -33,5 +33,7 @@
         {% endfor %}
         </section>
     {% endfor %}
+    </section> <!-- End scroll -->
+    </section> <!-- End details -->
 {% endif %}
 {% endblock %}

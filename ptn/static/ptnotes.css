@@ -14,6 +14,7 @@ body {
   margin: 0 auto;
   padding: 0;
   width: 100%;
+  min-width: 1080px;
   background-color: #fff;
   font-family: "Century Gothic", Calibri, Tahoma, sans-serif;
   font-size: 16px;
@@ -34,7 +35,7 @@ h3 {
 
 p {
   font-size: 1em;
-  line-height: 1.65;
+  line-height: 1.65em;
   color: #000;
   margin: 0 0 1.65em 0;
   padding: 0;
@@ -75,18 +76,22 @@ header h1 {
   font-family: Copperplate, Cambria, Georgia, serif;
   font-size: 3.25em;
   color: #ffcc33;
+  display: inline;
+  float: left;
 }
 
 nav {
-  margin-bottom: 2.5%;
+  margin: 2% 0 0 0;
   padding: 0;
+  display: inline;
+  float: right;
 }
 
 nav a {
   display: inline-block;
   text-decoration: none;
   margin: 0 1em .5em 0;
-  padding: 0 0 2px 0;
+  padding: 0;
   color: #000;
   font-size: 1.4em;
   border-bottom: none;
@@ -100,10 +105,9 @@ nav a:hover {
 .content {
   margin: 0 5%;
   padding: 0;
-}
-
-section {
-  min-height: 300px;
+  content: "";
+  clear: both;
+  height: 90%;
 }
 
 .note {
@@ -124,36 +128,11 @@ table, tr, td, th {
   border: 1px solid #eee;
 }
 
-footer {
-  margin: 1em 5% 1.25em 5%;
-  padding: 0;
-  background-color: #fff;
-}
-
-.column4 {
-    -ms-column-count: 4;
-    -moz-column-count: 4;
-    -webkit-column-count: 4;
-    column-count: 4;
-}
-
-.column6 {
-    -ms-column-count: 6;
-    -moz-column-count: 6;
-    -webkit-column-count: 6;
-    column-count: 6;
-}
-
-.column12 {
-    -ms-column-count: 12;
-    -moz-column-count: 12;
-    -webkit-column-count: 12;
-    column-count: 12;
-}
-
-.message {
-  background-color: #ffdd44;
-  width: 50%;
+.column2 {
+    -ms-column-count: 2;
+    -moz-column-count: 2;
+    -webkit-column-count: 2;
+    column-count: 2;
 }
 
 pre {
@@ -168,13 +147,38 @@ textarea {
   margin: 0;
   padding: 0 1em;
   width: 100%;
-  height: 200px;
+  height: 73vh;
   font-size: 1.1em;
   font-family: "Courier New", Courier, monospace;
 }
 
+.scroll {
+  height: 68vh;
+  overflow: scroll;
+}
+
+.notes {
+  width: 50%;
+  float: right;
+}
+
+.details {
+  float: left;
+  width: 45%;
+  height: 75vh;
+}
+
 img {
     max-width: 100px;
+}
+
+footer {
+  content: "";
+  clear: both;
+  display: table;
+  margin: 1em 5% 1.25em 5%;
+  padding: 0;
+  background-color: #fff;
 }
 
 footer p {

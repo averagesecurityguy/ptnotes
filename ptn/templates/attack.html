@@ -1,18 +1,32 @@
 {% extends "base.html" %}
 {% block data %}
-<a href="/project/{{ pid }}">Return to project page.</a>
-<h2>{{ attack['name'] }}</h2>
-<p>{{ attack['description'] }}</p>
 
-<h3>Notes</h3>
+<h2>{{ name }}</h2>
+<p>
+<a href="/project/{{ pid }}">Project Summary</a> |
+<a href="/project/{{ pid }}/hosts">Imported Hosts</a> |
+<a href="/project/{{ pid }}/attack/notes">Attack Notes</a> | 
+<a href="/project/{{ pid }}/host/notes">Host Notes</a> | 
+<a href="/project/{{ pid }}/import">Import Data</a>
+</p>
+
+<section class="notes">
+<h4>Notes</h4>
 <form method='POST' action="/project/{{ pid }}/attack/{{ attack['id'] }}">
 	<textarea name="note">{{ attack['note'] }}</textarea><br />
 	<input type="submit" value="Update Notes" />
 </form>
+</section>
 
-<h3>Affected Hosts</h3>
+<section class="details">
+<h3>{{ attack['name'] }}</h3>
+<p>{{ attack['description'] }}</p>
+
+<section class="scroll">
+<h4 onclick="toggle('affected')">Affected Hosts</h4>
+<section id="affected" style="display: none;">
 <p>View item details for each affected host.</p>
-<ul class="column4">
+<ul class="column2">
 {% for item in items %}
     <li>
     {% if item[0] == '' %}
@@ -31,13 +45,17 @@
     </li>
 {% endfor %}
 </ul>
+</section> <!-- End toggle -->
 
-<h3>Raw Host List</h3>
+<h4 onclick="toggle('raw')">Raw Host List</h4>
+<section id="raw" style="display: none;">
 <p>A list of affected hosts suitable for use with command line tools.</p>
 <ul>
 {% for item in items %}
     <li>{{ item[1] }} {{ item[2] }}</li>
 {% endfor %}
 </ul>
-
+</section> <!-- End toggle -->
+</section> <!-- End scroll -->
+</section> <!-- End details -->
 {% endblock %}

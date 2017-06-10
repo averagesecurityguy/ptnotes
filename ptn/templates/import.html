@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 {% block data %}
 
-<a href="/project/{{ pid }}">Return to project page.</a>
+<h2>{{ name }}</h2>
+<p>
+<a href="/project/{{ pid }}">Project Summary</a> |
+<a href="/project/{{ pid }}/hosts">Imported Hosts</a> |
+<a href="/project/{{ pid }}/attack/notes">Attack Notes</a> | 
+<a href="/project/{{ pid }}/host/notes">Host Notes</a> | 
+<a href="/project/{{ pid }}/import">Import Data</a>
+</p>
 
 <h3>Import Scan Data</h3>
 <form action="/project/{{ pid }}/import" method="post" enctype="multipart/form-data">

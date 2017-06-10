@@ -1,9 +1,17 @@
 {% extends "base.html" %}
 {% block data %}
-<a href="/project/{{ pid }}">Return to project page.</a>
+
+<h2>{{ name }}</h2>
+<p>
+<a href="/project/{{ pid }}">Project Summary</a> |
+<a href="/project/{{ pid }}/hosts">Imported Hosts</a> |
+<a href="/project/{{ pid }}/attack/notes">Attack Notes</a> | 
+<a href="/project/{{ pid }}/host/notes">Host Notes</a> | 
+<a href="/project/{{ pid }}/import">Import Data</a>
+</p>
 
 {% if item != {} %}
-    <h2><a href="/project/{{ pid }}/host/{{ item['ip'] }}">{{ item['ip'] }}</a> ({{ item['port'] }}/{{ item['protocol'] }})</h2>
+    <h3><a href="/project/{{ pid }}/host/{{ item['ip'] }}">{{ item['ip'] }}</a> ({{ item['port'] }}/{{ item['protocol'] }})</h3>
 
     <pre>{{ item['note'] }}</pre>
 {% endif %}

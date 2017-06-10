@@ -38,6 +38,26 @@ def about():
     return flask.render_template('about.html')
 
 
+@app.route("/project/<pid>/hosts")
+def hosts(pid):
+    """
+    Get summary inforation about all imported hosts.
+    """
+    project = get_project_db(pid)
+    ports = {}
+
+    db = database.ScanDatabase(project['dbfile'])
+    hosts = db.itemdb.get_ports()
+
+    for host in hosts:
+        ports[host] = {
+            'tcp': sorted(set([p[1] for p in hosts[host] if p[0] == 'tcp'])),
+            'udp': sorted(set([p[1] for p in hosts[host] if p[0] == 'udp']))}
+
+    return flask.render_template('hosts.html', pid=pid, name=project['name'],
+                                 ports=ports)
+
+
 @app.route('/project/<pid>/host/<ip>', methods=['GET', 'POST'])
 def host(pid, ip):
     """
@@ -68,7 +88,8 @@ def host(pid, ip):
     note = data['note']
 
     return flask.render_template('host.html', pid=pid, host=ip,
-            details=details, keys=keys, note=note)
+            details=details, keys=keys, note=note,
+            name=project['name'])
 
 
 @app.route('/project/<pid>/host/notes')
@@ -80,7 +101,8 @@ def host_notes(pid):
     db = database.ScanDatabase(project['dbfile'])
     notes = db.hostdb.get_host_notes()
 
-    return flask.render_template('notes.html', pid=pid, notes=notes)
+    return flask.render_template('notes.html', pid=pid, notes=notes,
+                name=project['name'])
 
 
 @app.route('/project/<pid>/item/<item_id>')
@@ -95,7 +117,8 @@ def item(pid, item_id):
     if item is None:
         flask.abort(404)
 
-    return flask.render_template('item.html', pid=pid, item=item)
+    return flask.render_template('item.html', pid=pid, item=item,
+                name=project['name'])
 
 
 @app.route('/project/<pid>/attack/<aid>', methods=['GET', 'POST'])
@@ -117,7 +140,8 @@ def get_attack(pid, aid):
 
     items = [i.split(':') for i in attack['items'].split(',')]
 
-    return flask.render_template('attack.html', pid=pid, attack=attack, items=items)
+    return flask.render_template('attack.html', pid=pid, attack=attack,
+                items=items, name=project['name'])
 
 
 @app.route('/project/<pid>/import', methods=['GET', 'POST'])
@@ -131,7 +155,8 @@ def import_scan(pid):
     if flask.request.method == 'GET':
         files = db.importdb.get_imported_files()
 
-        return flask.render_template('import.html', pid=pid, files=files)
+        return flask.render_template('import.html', pid=pid, files=files,
+                    name=project['name'])
 
     else:
         i = importscan.Import(project['dbfile'])
@@ -157,7 +182,8 @@ def attack_notes(pid):
     db = database.ScanDatabase(project['dbfile'])
     notes = db.attackdb.get_attack_notes()
 
-    return flask.render_template('notes.html', pid=pid, notes=notes)
+    return flask.render_template('notes.html', pid=pid, notes=notes,
+                name=project['name'])
 
 
 @app.route('/projects', methods=['GET', 'POST'])
@@ -186,20 +212,12 @@ def get_project(pid):
     Get a project, including the list of hosts attacks.
     """
     project = get_project_db(pid)
-    ports = {}
 
     db = database.ScanDatabase(project['dbfile'])
-    hosts = db.itemdb.get_ports()
     attacks = db.attackdb.get_attacks()
 
-    for host in hosts:
-        ports[host] = {
-            'tcp': sorted(set([p[1] for p in hosts[host] if p[0] == 'tcp'])),
-            'udp': sorted(set([p[1] for p in hosts[host] if p[0] == 'udp']))}
-
-    return flask.render_template('project.html', pid=pid,
-                                 note=project['note'], name=project['name'],
-                                 ports=ports, attacks=attacks)
+    return flask.render_template('project.html', pid=pid, note=project['note'],
+                                 name=project['name'], attacks=attacks)
 
 
 @app.route('/project/<pid>/notes', methods=['GET', 'POST'])
@@ -216,10 +234,8 @@ def project_notes(pid):
 
         return flask.redirect(flask.url_for('get_project', pid=pid))
     else:
-        note = project['note']
-        name = project['name']
-
-        return flask.render_template('project_notes.html', pid=pid, name=name, note=note)
+        return flask.render_template('project_notes.html', pid=pid,
+                    name=project['name'], note=project['note'])
 
 
 @app.route('/project/<pid>/delete')
