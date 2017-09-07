@@ -163,29 +163,41 @@ class ItemDatabase(Database):
         else:
             return {}
 
-    def get_ports(self):
+    def get_summary(self):
         """
         Get all hosts and ports in the database.
         """
-        ports = {}
+        summary = {'hosts': [], 'ips': [], 'tcp': [], 'udp': []}
 
         self.log.debug('Getting all hosts and ports from the database.')
-        stmt = "SELECT ip, port, protocol FROM items"
+        stmt = "SELECT ip, port, protocol FROM items WHERE port != 0"
 
         if self.execute_sql(stmt) is True:
-            for p in self.cur.fetchall():
-                if p['port'] == 0:
-                    continue
+            summary['hosts'] = [ {'ip': h['ip'], 'port': h['port'], 'protocol': h['protocol']} for h in self.cur.fetchall() ]
 
-                port = (p['protocol'], str(p['port']))
+        self.log.debug('Getting unique hosts from the database.')
+        stmt = "SELECT DISTINCT(ip) FROM items"
 
-                if p['ip'] in ports:
-                    ports[p['ip']].append(port)
-                else:
-                    ports[p['ip']] = []
-                    ports[p['ip']].append(port)
+        if self.execute_sql(stmt) is True:
+            summary['ips'] = [h['ip'] for h in self.cur.fetchall()]
 
-        return ports
+        self.log.debug('Getting unique TCP ports from the database.')
+        stmt = """SELECT DISTINCT(port) FROM items
+                  WHERE port != 0 AND protocol == 'tcp'
+                  ORDER BY port ASC"""
+
+        if self.execute_sql(stmt) is True:
+            summary['tcp'] = [h['port'] for h in self.cur.fetchall()]
+
+        self.log.debug('Getting unique UDP ports from the database.')
+        stmt = """SELECT DISTINCT(port) FROM items
+                  WHERE port != 0 AND protocol == 'udp'
+                  ORDER BY port ASC"""
+
+        if self.execute_sql(stmt) is True:
+            summary['udp'] = [h['port'] for h in self.cur.fetchall()]
+
+        return summary
 
     def get_items_by_ip(self, ip):
         """

@@ -5,14 +5,14 @@
 <p>
 <a href="/project/{{ pid }}">Project Summary</a> |
 <a href="/project/{{ pid }}/hosts">Imported Hosts</a> |
-<a href="/project/{{ pid }}/attack/notes">Attack Notes</a> | 
-<a href="/project/{{ pid }}/host/notes">Host Notes</a> | 
+<a href="/project/{{ pid }}/attack/notes">Attack Notes</a> |
+<a href="/project/{{ pid }}/host/notes">Host Notes</a> |
 <a href="/project/{{ pid }}/import">Import Data</a>
 </p>
 
 <h3>Imported Hosts</h3>
 
-{% if not ports %}
+{% if not hosts%}
     <p>No hosts have been imported yet, please import a Nessus or Nmap XML file.</p>
 {% else %}
     <table>
@@ -21,13 +21,23 @@
             <th>TCP Ports</th>
             <th>UDP Ports</th>
         </tr>
-        {% for p in ports %}
+        {% for host in hosts %}
             <tr>
-                <td><a href="/project/{{ pid }}/host/{{ p }}">{{ p }}</a></td>
-                <td>{{ ', '.join(ports[p]['tcp']) }}</td>
-                <td>{{ ', '.join(ports[p]['udp']) }}</td>
+                <td><a href="/project/{{ pid }}/host/{{ host }}">{{ host }}</a></td>
+                <td>{{ ', '.join(hosts[host]['tcp']) }}</td>
+                <td>{{ ', '.join(hosts[host]['udp']) }}</td>
             </tr>
         {% endfor %}
     </table>
 {% endif %}
+
+<h3>Unique Hosts</h3>
+{{ ', '.join(ips) }}
+
+<h3>Unique TCP Ports</h3>
+{{ ','.join(tcp) }}
+
+<h3>Unique UDP Ports</h3>
+{{ ','.join(udp) }}
+
 {% endblock %}

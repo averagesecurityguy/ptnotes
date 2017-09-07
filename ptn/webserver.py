@@ -14,6 +14,8 @@ import attacks
 #-----------------------------------------------------------------------------
 app = flask.Flask(__name__)
 
+def ip_key(ip):
+    return tuple(int(part) for part in ip.split('.'))
 
 def get_project_db(pid):
     """
@@ -44,18 +46,35 @@ def hosts(pid):
     Get summary inforation about all imported hosts.
     """
     project = get_project_db(pid)
-    ports = {}
-
     db = database.ScanDatabase(project['dbfile'])
-    hosts = db.itemdb.get_ports()
+
+    summary = db.itemdb.get_summary()
+    hosts = {}
+    ips = sorted(summary['ips'], key=lambda x: ip_key(x[0]))
+    tcp = [str(p) for p in summary['tcp']]
+    udp = [str(p) for p in summary['udp']]
+
+    for host in summary['hosts']:
+        ip = host['ip']
+        port = host['port']
+        proto = host['protocol']
+
+        if ip not in hosts:
+            hosts[ip] = {'tcp': [], 'udp': []}
+
+        if host['protocol'] == 'tcp':
+            hosts[ip]['tcp'].append(port)
+        elif host['protocol'] == 'udp':
+            hosts[ip]['udp'].append(port)
+        else:
+            pass
 
     for host in hosts:
-        ports[host] = {
-            'tcp': sorted(set([p[1] for p in hosts[host] if p[0] == 'tcp'])),
-            'udp': sorted(set([p[1] for p in hosts[host] if p[0] == 'udp']))}
+        hosts[host]['tcp'] = [str(t) for t in sorted(set(hosts[host]['tcp']))]
+        hosts[host]['udp'] = [str(t) for t in sorted(set(hosts[host]['udp']))]
 
     return flask.render_template('hosts.html', pid=pid, name=project['name'],
-                                 ports=ports)
+                                 hosts=hosts, ips=ips, tcp=tcp, udp=udp)
 
 
 @app.route('/project/<pid>/host/<ip>', methods=['GET', 'POST'])
@@ -236,7 +255,6 @@ def project_notes(pid):
     else:
         return flask.render_template('project_notes.html', pid=pid,
                     name=project['name'], note=project['note'])
-
 
 @app.route('/project/<pid>/delete')
 def delete_project(pid):
