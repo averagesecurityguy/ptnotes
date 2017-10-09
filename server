@@ -46,5 +46,8 @@ logging.getLogger('').addHandler(console)
 logging.info('Starting PTNotes server.')
 print('Starting PTNotes server on {0}:{1}'.format(SERVER, PORT))
 
+cert_file = os.path.join('config', 'cert.pem')
+key_file = os.path.join('config', 'key.pem')
+
 import ptn.webserver as server
-server.app.run(host=SERVER, port=PORT, debug=DEBUG)
+server.app.run(host=SERVER, port=PORT, debug=DEBUG, ssl_context=(cert_file, key_file))
