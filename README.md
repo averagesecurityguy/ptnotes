@@ -19,8 +19,17 @@ The only supported versions of PTNotes is the latest release and the dev branch.
 
 
 ## Usage
-From the ptnotes folder run `./server` then connect to the server on https://127.0.0.1:5000. PTNotes ships with a default TLS certificate. For security purposes, this certificate should be replaced when running the server in production. To install your certificate, replace the `config/cert.pem` and `config/key.pem` files with the appropriate files.
+From the ptnotes folder run `./server` then connect to the server on https://127.0.0.1:5000. PTNotes ships with a default TLS certificate. For security purposes, this certificate should be replaced when running the server in production. To install your certificate, replace the `config/cert.pem` and `config/key.pem` files with the appropriate files. PTNotes also supports the following command line options.
 
+```
+usage: server [-h] [-l LISTEN_ADDRESS] [-p LISTEN_PORT] [-d]
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -l LISTEN_ADDRESS  Address to listen on. Default is 127.0.0.1
+  -p LISTEN_PORT     Port to listen on. Default is 5000.
+  -d                 Enable Flask debugging. Should not be used in production.
+```
 
 ## Creating New Attacks
 To add new attacks to PTNotes edit the `data/attacks.json` file. Each attack uses the following structure:
