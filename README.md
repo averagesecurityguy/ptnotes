@@ -39,3 +39,17 @@ To add new attacks to PTNotes edit the `data/attacks.json` file. Each attack use
 ```
 
 An attack needs a name and description along with a list of keywords that signify a machine may vulnerable to the attack. When data is imported to PTNotes the Nessus plugin id or the Nmap script name are extracted along with the plugin/script output. You can search for vulnerabilities using the plugin id or script name surrounded by -- as seen in the example above. You can also use any text from the plugin or script output. Multiple keywords are joined with OR to create the final query.
+
+## To use the Docker container
+Start by building it:
+```
+docker build . -t <your username>/ptnotes
+```
+Next, run it:
+```
+docker run -d -p 5000:5000 --name=ptnotes -v <absolute path to the repo>/data:/ptnotes/data <your username>/ptnotes
+```
+Destroy it when you're done (your data will persist since you used the volume mount parameter):
+```
+docker stop ptnotes && docker rm ptnotes
+```
