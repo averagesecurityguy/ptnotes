@@ -3,9 +3,22 @@
 
 import logging
 import os
+import argparse
 
-SERVER = '0.0.0.0'
-PORT = 5000
+#Parse command line arguments using argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('-l', action='store', default='127.0.0.1', metavar='LISTEN_ADDRESS'
+                    help='Address to listen on. Default is 127.0.0.1')
+parser.add_argument('-p', action='store', default=5000, metavar="LISTEN_PORT",
+                    help='Port to listen on. Default is 5000.')
+parser.add_argument('-d', action='store_true', default=False,
+                    help='Enable Flask debugging. Should not be used in production.')
+
+args = parser.parse_args()
+
+SERVER = args.l
+PORT = args.p
+DEBUG = args.d
 LOG_LEVEL = logging.INFO
 
 #-----------------------------------------------------------------------------
@@ -34,4 +47,4 @@ logging.info('Starting PTNotes server.')
 print('Starting PTNotes server on {0}:{1}'.format(SERVER, PORT))
 
 import ptn.webserver as server
-server.app.run(host=SERVER, port=PORT, debug=False)
+server.app.run(host=SERVER, port=PORT, debug=DEBUG)

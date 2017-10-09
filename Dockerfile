@@ -17,4 +17,4 @@ WORKDIR /ptnotes
 
 EXPOSE 5000
 
-CMD ["./server"]
+CMD ["./server", "-s", "0.0.0.0"]
