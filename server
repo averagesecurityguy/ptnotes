@@ -7,7 +7,7 @@ import argparse
 
 #Parse command line arguments using argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('-l', action='store', default='127.0.0.1', metavar='LISTEN_ADDRESS'
+parser.add_argument('-l', action='store', default='127.0.0.1', metavar='LISTEN_ADDRESS',
                     help='Address to listen on. Default is 127.0.0.1')
 parser.add_argument('-p', action='store', default=5000, metavar="LISTEN_PORT",
                     help='Port to listen on. Default is 5000.')
