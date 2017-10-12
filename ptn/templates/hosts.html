@@ -17,27 +17,31 @@
 {% else %}
     <table>
         <tr>
-            <th>Host</th>
+            <th>IP</th>
+            <th>Hostname</th>
+            <th>OS</th>
             <th>TCP Ports</th>
             <th>UDP Ports</th>
         </tr>
         {% for host in hosts %}
             <tr>
-                <td><a href="/project/{{ pid }}/host/{{ host }}">{{ host }}</a></td>
-                <td>{{ ', '.join(hosts[host]['tcp']) }}</td>
-                <td>{{ ', '.join(hosts[host]['udp']) }}</td>
+                <td><a href="/project/{{ pid }}/host/{{ host }}">{{ host['ip'] }}</a></td>
+                <td>{{ host['fqdn'] }}</td>
+                <td>{{ host['os'] }}
+                <td>{{ ', '.join(host['tcp']) }}</td>
+                <td>{{ ', '.join(host['udp']) }}</td>
             </tr>
         {% endfor %}
     </table>
 {% endif %}
 
 <h3>Unique Hosts</h3>
-{{ ', '.join(ips) }}
+{{ ', '.join(unique['ip']) }}
 
 <h3>Unique TCP Ports</h3>
-{{ ','.join(tcp) }}
+{{ ','.join(unique['tcp']) }}
 
 <h3>Unique UDP Ports</h3>
-{{ ','.join(udp) }}
+{{ ','.join(unique['udp']) }}
 
 {% endblock %}

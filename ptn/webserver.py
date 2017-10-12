@@ -14,9 +14,6 @@ import attacks
 #-----------------------------------------------------------------------------
 app = flask.Flask(__name__)
 
-def ip_key(ip):
-    return tuple(int(part) for part in ip.split('.'))
-
 def get_project_db(pid):
     """
     Get our project database.
@@ -48,33 +45,11 @@ def hosts(pid):
     project = get_project_db(pid)
     db = database.ScanDatabase(project['dbfile'])
 
-    summary = db.itemdb.get_summary()
-    hosts = {}
-    ips = sorted(summary['ips'], key=lambda x: ip_key(x[0]))
-    tcp = [str(p) for p in summary['tcp']]
-    udp = [str(p) for p in summary['udp']]
-
-    for host in summary['hosts']:
-        ip = host['ip']
-        port = host['port']
-        proto = host['protocol']
-
-        if ip not in hosts:
-            hosts[ip] = {'tcp': [], 'udp': []}
-
-        if host['protocol'] == 'tcp':
-            hosts[ip]['tcp'].append(port)
-        elif host['protocol'] == 'udp':
-            hosts[ip]['udp'].append(port)
-        else:
-            pass
-
-    for host in hosts:
-        hosts[host]['tcp'] = [str(t) for t in sorted(set(hosts[host]['tcp']))]
-        hosts[host]['udp'] = [str(t) for t in sorted(set(hosts[host]['udp']))]
+    hosts = db.get_summary()
+    unique = db.get_unique()
 
     return flask.render_template('hosts.html', pid=pid, name=project['name'],
-                                 hosts=hosts, ips=ips, tcp=tcp, udp=udp)
+                                 hosts=hosts, unique=unique)
 
 
 @app.route('/project/<pid>/host/<ip>', methods=['GET', 'POST'])

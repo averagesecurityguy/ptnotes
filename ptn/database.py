@@ -15,6 +15,9 @@ import validate
 #
 PRJ_FILE = os.path.join('data', 'projects.sqlite')
 
+def ip_key(ip):
+    return tuple(int(part) for part in ip.split('.'))
+
 
 class DatabaseException(Exception):
     pass
@@ -94,7 +97,7 @@ class ScanDatabase():
         """
         self.log.debug('Gathering stats.')
 
-        hosts = len(self.hostdb.get_hosts())
+        hosts = len(self.itemdb.get_unique_hosts())
         attacks = len(self.attackdb.get_attacks())
 
         return 'Hosts: {0}  Attacks {1}'.format(hosts, attacks)
@@ -109,6 +112,38 @@ class ScanDatabase():
         host['items'] = self.itemdb.get_items_by_ip(ip)
 
         return host
+
+    def get_summary(self):
+        """
+        Get summary information for all of the hosts.
+        """
+        summary = []
+
+        hosts = self.itemdb.get_unique_hosts()
+        for host in hosts:
+            h = dict(self.hostdb.get_host(host))
+
+            ports = self.itemdb.get_ports_by_ip(host)
+            h['tcp'] = [str(p) for p in sorted(ports['tcp'])]
+            h['udp'] = [str(p) for p in sorted(ports['udp'])]
+
+            summary.append(h)
+
+        summary = sorted(summary, key=lambda x: ip_key(x['ip']))
+
+        return summary
+
+    def get_unique(self):
+        unique = {}
+
+        ips = [ip for ip in self.itemdb.get_unique_hosts()]
+        unique['ip'] = sorted(ips, key=lambda x: ip_key(x))
+
+        ports = self.itemdb.get_unique_ports()
+        unique['tcp'] = [str(p) for p in sorted(ports['tcp'])]
+        unique['udp'] = [str(p) for p in sorted(ports['udp'])]
+
+        return unique
 
 
 class ItemDatabase(Database):
@@ -163,23 +198,23 @@ class ItemDatabase(Database):
         else:
             return {}
 
-    def get_summary(self):
+    def get_unique_hosts(self):
         """
-        Get all hosts and ports in the database.
+        Get unique hosts listed in the item database.
         """
-        summary = {'hosts': [], 'ips': [], 'tcp': [], 'udp': []}
-
-        self.log.debug('Getting all hosts and ports from the database.')
-        stmt = "SELECT ip, port, protocol FROM items WHERE port != 0"
+        self.log.debug('Getting unique hosts.')
+        stmt = "SELECT DISTINCT ip FROM items ORDER BY ip"
 
         if self.execute_sql(stmt) is True:
-            summary['hosts'] = [ {'ip': h['ip'], 'port': h['port'], 'protocol': h['protocol']} for h in self.cur.fetchall() ]
+            return [h['ip'] for h in self.cur.fetchall()]
+        else:
+            return []
 
-        self.log.debug('Getting unique hosts from the database.')
-        stmt = "SELECT DISTINCT(ip) FROM items"
-
-        if self.execute_sql(stmt) is True:
-            summary['ips'] = [h['ip'] for h in self.cur.fetchall()]
+    def get_unique_ports(self):
+        """
+        Get unique ports in the database.
+        """
+        ports = {'tcp': [], 'udp': []}
 
         self.log.debug('Getting unique TCP ports from the database.')
         stmt = """SELECT DISTINCT(port) FROM items
@@ -187,7 +222,7 @@ class ItemDatabase(Database):
                   ORDER BY port ASC"""
 
         if self.execute_sql(stmt) is True:
-            summary['tcp'] = [h['port'] for h in self.cur.fetchall()]
+            ports['tcp'] = [h['port'] for h in self.cur.fetchall()]
 
         self.log.debug('Getting unique UDP ports from the database.')
         stmt = """SELECT DISTINCT(port) FROM items
@@ -195,9 +230,35 @@ class ItemDatabase(Database):
                   ORDER BY port ASC"""
 
         if self.execute_sql(stmt) is True:
-            summary['udp'] = [h['port'] for h in self.cur.fetchall()]
+            ports['udp'] = [h['port'] for h in self.cur.fetchall()]
 
-        return summary
+        return ports
+
+    def get_ports_by_ip(self, ip):
+        """
+        Get unique TCP and UDP ports associated with an IP.
+        """
+        ports = {}
+
+        self.log.debug('Getting unique TCP ports for {0}.'.format(ip))
+        stmt = """SELECT DISTINCT(port) FROM items
+                  WHERE port != 0 AND protocol == 'tcp'
+                  AND ip == ?
+                  ORDER BY port ASC"""
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            ports['tcp'] = [h['port'] for h in self.cur.fetchall()]
+
+        self.log.debug('Getting unique UDP ports for {0}.'.format(ip))
+        stmt = """SELECT DISTINCT(port) FROM items
+                  WHERE port != 0 AND protocol == 'udp'
+                  AND ip == ?
+                  ORDER BY port ASC"""
+
+        if self.execute_sql(stmt, (ip,)) is True:
+            ports['udp'] = [h['port'] for h in self.cur.fetchall()]
+
+        return ports
 
     def get_items_by_ip(self, ip):
         """
@@ -350,6 +411,8 @@ class HostDatabase(Database):
         CREATE TABLE IF NOT EXISTS hosts (
             id integer primary key autoincrement,
             ip text,
+            os text,
+            fqdn text,
             note text
         )
         '''
@@ -358,26 +421,26 @@ class HostDatabase(Database):
         if hres is False:
             raise DatabaseException('Could not create hosts table.')
 
-    def create_host(self, ip):
+    def create_host(self, ip, os, fqdn):
         """
         Create a new host identified by the IP address.
         """
         self.log.debug('Creating new host for {0}.'.format(ip))
 
-        stmt = "INSERT INTO hosts (ip) VALUES(?)"
-        return self.execute_sql(stmt, (ip,))
+        stmt = "INSERT INTO hosts (ip, os, fqdn) VALUES(?,?,?)"
+        return self.execute_sql(stmt, (ip, os, fqdn))
 
-    def get_hosts(self):
+    def get_host(self, ip):
         """
-        Get all hosts.
+        Get host data associated with ip.
         """
-        self.log.debug('Getting summary data for all hosts.')
-        stmt = "SELECT DISTINCT ip FROM hosts ORDER BY ip"
+        self.log.debug('Getting host data for {0}.'.format(ip))
+        stmt = "SELECT ip, os, fqdn FROM hosts WHERE ip=?"
 
-        if self.execute_sql(stmt) is True:
-            return self.cur.fetchall()
+        if self.execute_sql(stmt, (ip,)) is True:
+            return self.cur.fetchone()
         else:
-            return []
+            return {}
 
     def get_host_ip(self, ip):
         """
@@ -385,7 +448,7 @@ class HostDatabase(Database):
         """
         self.log.debug('Getting host record associated with IP {0}.'.format(ip))
 
-        stmt = "SELECT ip FROM hosts WHERE ip=?"
+        stmt = "SELECT ip FROM hosts WHERE ip=? LIMIT=1"
         if self.execute_sql(stmt, (ip,)) is True:
             return [i['ip'] for i in self.cur.fetchall()]
         else:

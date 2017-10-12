@@ -69,14 +69,19 @@ class Import():
         self.log.debug('Processing Nessus report hosts.')
         for host in report_hosts:
             self.log.debug('Getting IP address for report host.')
-            ip = ''
+            ip = os = fqdn = ''
+
             for tag in host.find('HostProperties').findall('tag'):
                 if tag.attrib['name'] == 'host-ip':
                     ip = tag.text
+                if tag.attrib['name'] == 'operating-system':
+                    os = tag.text
+                if tag.attrib['name'] == 'host-fqdn':
+                    fqdn = tag.text
 
             if (ip != ''):
                 self.log.info('Adding host record for IP {0}.'.format(ip))
-                self.create_host(ip)
+                self.create_host(ip, os, fqdn)
                 self.log.info('Processing IP {0}.'.format(ip))
                 self.process_nessus_items(ip, host.findall('ReportItem'))
 
@@ -122,11 +127,21 @@ class Import():
 
             for host in root.findall('host'):
                 self.log.debug('Getting IP address for host.')
+                ip = os = fqdn = ''
+
                 address = host.find('address')
                 ip = address.attrib['addr']
 
+                oses = host.findall('os/osmatch')
+                if oses != []:
+                    os = oses[0].attrib['name']
+
+                hostnames = host.findall('hostnames/hostname')
+                if hostnames != []:
+                    fqdn = hostnames[0].attrib['name']
+
                 self.log.info('Adding host record for IP {0}.'.format(ip))
-                self.create_host(ip)
+                self.create_host(ip, os, fqdn)
 
                 self.log.info('Processing ip {0}.'.format(ip))
                 self.process_nmap_ports(ip, host.findall('ports/port'))
@@ -264,12 +279,12 @@ class Import():
         else:
             self.log.info('Item already exists in database.')
 
-    def create_host(self, ip):
+    def create_host(self, ip, os, fqdn):
         """
         Only add new host to database if it does not exist.
         """
         if self.db.hostdb.get_host_ip(ip) == []:
-            if self.db.hostdb.create_host(ip) is False:
+            if self.db.hostdb.create_host(ip, os, fqdn) is False:
                 self.log.error('Unable to create host record in database.')
         else:
             self.log.info('Host already exists in database.')
