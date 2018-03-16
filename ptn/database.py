@@ -55,7 +55,7 @@ class Database():
         else:
             return []
 
-    def execute_sql(self, stmt, args=None, commit=True):
+    def execute_sql(self, stmt, args=None, commit=False):
         """
         Execute an SQL statement.
 
@@ -163,7 +163,7 @@ class ItemDatabase(Database):
             hash text
         )
         '''
-        ires = self.execute_sql(items)
+        ires = self.execute_sql(items, commit=True)
 
         if ires is False:
             raise DatabaseException('Could not create items table.')
@@ -184,7 +184,7 @@ class ItemDatabase(Database):
             return False
 
         stmt = "INSERT INTO items (ip, port, protocol, note, hash) VALUES(?,?,?,?,?)"
-        return self.execute_sql(stmt, (ip, port, protocol, note, hash))
+        return self.execute_sql(stmt, (ip, port, protocol, note, hash), True)
 
     def get_item(self, item_id):
         """
@@ -319,7 +319,7 @@ class AttackDatabase(Database):
             note text
         )
         '''
-        ares = self.execute_sql(attacks)
+        ares = self.execute_sql(attacks, commit=True)
 
         if ares is False:
             raise DatabaseException('Could not create attack table.')
@@ -331,7 +331,7 @@ class AttackDatabase(Database):
         self.log.debug('Creating new attack for {0}.'.format(name))
 
         stmt = "INSERT INTO attacks (name, description, items, note) VALUES(?,?,?,?)"
-        return self.execute_sql(stmt, (name, description, ','.join(items), ''))
+        return self.execute_sql(stmt, (name, description, ','.join(items), ''), True)
 
     def get_attack_by_name(self, name):
         """
@@ -388,7 +388,7 @@ class AttackDatabase(Database):
         self.log.debug('Updating items for attack {0}.'.format(aid))
 
         stmt = "UPDATE attacks SET items=? WHERE id=?"
-        return self.execute_sql(stmt, (','.join(items), aid))
+        return self.execute_sql(stmt, (','.join(items), aid), True)
 
     def update_attack_note(self, aid, note):
         """
@@ -397,7 +397,7 @@ class AttackDatabase(Database):
         self.log.debug('Updating note for attack {0}.'.format(aid))
 
         stmt = "UPDATE attacks SET note=? WHERE id=?"
-        return self.execute_sql(stmt, (note, aid))
+        return self.execute_sql(stmt, (note, aid), True)
 
 
 class HostDatabase(Database):
@@ -416,7 +416,7 @@ class HostDatabase(Database):
             note text
         )
         '''
-        hres = self.execute_sql(hosts)
+        hres = self.execute_sql(hosts, commit=True)
 
         if hres is False:
             raise DatabaseException('Could not create hosts table.')
@@ -428,7 +428,7 @@ class HostDatabase(Database):
         self.log.debug('Creating new host for {0}.'.format(ip))
 
         stmt = "INSERT INTO hosts (ip, os, fqdn) VALUES(?,?,?)"
-        return self.execute_sql(stmt, (ip, os, fqdn))
+        return self.execute_sql(stmt, (ip, os, fqdn), True)
 
     def get_host(self, ip):
         """
@@ -485,7 +485,7 @@ class HostDatabase(Database):
         self.log.debug('Updating note for host {0}.'.format(ip))
 
         stmt = "UPDATE hosts SET note=? WHERE ip=?"
-        return self.execute_sql(stmt, (note, ip))
+        return self.execute_sql(stmt, (note, ip), True)
 
 
 class ImportDatabase(Database):
@@ -501,7 +501,7 @@ class ImportDatabase(Database):
             filename text
         )
         '''
-        ires = self.execute_sql(imports)
+        ires = self.execute_sql(imports, commit=True)
 
         if ires is False:
             raise DatabaseException('Could not create imports table.')
@@ -525,7 +525,7 @@ class ImportDatabase(Database):
         self.log.debug('Adding imported file {0}.'.format(filename))
 
         stmt = "INSERT INTO imports (filename) VALUES (?)"
-        return self.execute_sql(stmt, (filename,))
+        return self.execute_sql(stmt, (filename,), True)
 
 
 class ProjectDatabase(Database):
@@ -551,7 +551,7 @@ class ProjectDatabase(Database):
             dbfile text
         )
         '''
-        res = self.execute_sql(projects)
+        res = self.execute_sql(projects, commit=True)
 
         if res is False:
             raise DatabaseException('Could not initialize project database.')
@@ -567,7 +567,7 @@ class ProjectDatabase(Database):
         try:
             scan_db = ScanDatabase(db_name)
             stmt = "INSERT INTO projects (name, dbfile) VALUES(?,?)"
-            return self.execute_sql(stmt, (name, db_name))
+            return self.execute_sql(stmt, (name, db_name), True)
         except DatabaseException:
             return False
 
@@ -601,7 +601,7 @@ class ProjectDatabase(Database):
         """
         self.log.debug('Updating project {0}.'.format(pid))
         stmt = "UPDATE projects SET note=? WHERE id=?"
-        return self.execute_sql(stmt, (note, pid))
+        return self.execute_sql(stmt, (note, pid), True)
 
     def delete_project(self, pid):
         """
@@ -613,7 +613,7 @@ class ProjectDatabase(Database):
             self.log.error('Could not find project {0}.'.format(pid))
 
         stmt = "DELETE FROM projects WHERE id=?"
-        if self.execute_sql(stmt, (pid,)) is True:
+        if self.execute_sql(stmt, (pid,), True) is True:
             self.delete_file(db_file)
         else:
             self.error('Could not delete project {0} from database.'.format(pid))
