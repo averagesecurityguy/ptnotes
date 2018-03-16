@@ -199,10 +199,11 @@ class Import():
         if service.attrib.get('ostype') is not None:
             note += 'Operating System: {0}\n'.format(service.attrib.get('ostype', ''))
 
-        if service.attrib.get('product') is not None:
-            note += 'Service: {0}'.format(service.attrib.get('product', ''))
-        else:
+        if service.attrib.get('name') is not None:
             note += 'Service: {0}'.format(service.attrib.get('name', ''))
+
+        if service.attrib.get('product') is not None:
+            note += 'Product: {0}'.format(service.attrib.get('product', ''))
 
         if service.attrib.get('extrainfo') is not None:
             note += 'Sevice Info: {0}'.format(service.attrib.get('extrainfo', ''))

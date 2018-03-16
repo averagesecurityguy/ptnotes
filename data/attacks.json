@@ -1,28 +1,18 @@
 [
     {
-        "name": "SSH Brute-force.",
+        "name": "SSH Brute-force",
         "description": "Many devices have common SSH username and password combinations.",
-        "keywords": ["--ssh-hostkey--", "--10881--"]
+        "keywords": ["--ssh-hostkey--", "--10881--", "Service: ssh"]
     },
     {
-        "name": "SMB Brute-force.",
+        "name": "SMB Brute-force",
         "description": "Attempt to brute-force the local administrator account on these SMB servers.",
-        "keywords": ["--smb-os-discovery--", "--11011--"]
+        "keywords": ["--smb-os-discovery--", "--11011--", "Service: microsoft-ds"]
     },
     {
         "name": "Telnet Servers",
         "description": "Many devices have common telnet username and password combinations.",
         "keywords": ["--42263--"]
-    },
-    {
-        "name": "SSLv2/SSLv3",
-        "description": "SSL version 2 and version 3 should be disabled in most production environments.",
-        "keywords": ["--sslv2--", "--sslv3--", "--20007--"]
-    },
-    {
-        "name": "POODLE",
-        "description": "An SSLv3/TLSv1 padding oracle attack.",
-        "keywords": ["--78479--"]
     },
     {
         "name": "User Accounts",
@@ -85,18 +75,18 @@
         "keywords": ["Metasploit:"]
     },
     {
-        "name": "Unsupported Software",
-        "description": "The listed software is no longer supported by the manufacturer.",
-        "keywords": ["No longer supported"]
-    },
-    {
         "name": "IKE Aggressive Mode",
         "description": "These servers allow IKE connections, they should be checked for aggressive mode support.",
         "keywords": ["--62694--"]
     },
     {
-        "name": "SWEET32",
-        "description": "These servers may be vulnerable to SWEET32. The vulnerability can be verified using YAWAST by Adam Caudill or sweet32.go by AverageSecurityGuy.",
-        "keywords": ["--94437--"]
+        "name": "FTP Brute Force",
+        "description": "Attempt to brute-force accounts on these FTP servers.",
+        "keywords": ["--10092--"]
+    },
+    {
+        "name": "Anonymous FTP",
+        "description": "These FTP servers allow anonymous access.",
+        "keywords": ["--ftp-anon--"]
     }
 ]
